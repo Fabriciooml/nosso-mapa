@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.env
+
+# Node
+node_modules/
+dist/
+
+# Local env
+frontend/.env.local
+*.db
+
+# Superpowers
+.superpowers/
+
+# Claude Code
+.claude/

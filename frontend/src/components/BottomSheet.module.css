@@ -1,0 +1,47 @@
+.sheet {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--bg-panel);
+  border-top: 1px solid var(--border);
+  border-radius: 16px 16px 0 0;
+  height: 40vh;
+  display: flex;
+  flex-direction: column;
+  transition: height 0.3s ease;
+  z-index: 100;
+}
+
+.expanded {
+  height: 80vh;
+}
+
+.handle {
+  display: flex;
+  justify-content: center;
+  padding: 0.75rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.pill {
+  display: block;
+  width: 40px;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+}
+
+.filters {
+  padding: 0 0.75rem;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.list {
+  flex: 1;
+  overflow-y: auto;
+}

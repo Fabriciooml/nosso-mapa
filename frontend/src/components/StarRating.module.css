@@ -1,0 +1,43 @@
+.display {
+  display: inline-flex;
+  gap: 2px;
+  align-items: center;
+}
+
+.noRating {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+.input {
+  display: inline-flex;
+  gap: 2px;
+  align-items: center;
+}
+
+.starWrapper {
+  position: relative;
+  display: inline-flex;
+}
+
+.halfBtn {
+  position: absolute;
+  top: 0;
+  width: 50%;
+  height: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  z-index: 1;
+}
+
+.halfBtn:last-of-type {
+  left: 50%;
+}
+
+.star {
+  width: 20px;
+  height: 20px;
+  display: block;
+}

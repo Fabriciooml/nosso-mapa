@@ -1,0 +1,47 @@
+.panel {
+  width: 310px;
+  min-width: 310px;
+  height: 100%;
+  background: var(--bg-panel);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.header {
+  padding: 1rem 1rem 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.wordmark {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: 1.25rem;
+  color: var(--amber);
+  letter-spacing: 0.02em;
+}
+
+.filters {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.addBtn {
+  margin: 0.75rem;
+  padding: 0.625rem;
+  background: var(--amber);
+  color: var(--bg-deep);
+  border: none;
+  border-radius: 8px;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  width: calc(100% - 1.5rem);
+}

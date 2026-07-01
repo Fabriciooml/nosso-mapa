@@ -1,0 +1,78 @@
+.app {
+  height: 100%;
+  position: relative;
+}
+
+/* Desktop: visible ≥768px */
+.desktop {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .desktop {
+    display: flex;
+    height: 100%;
+  }
+
+  .mobile {
+    display: none;
+  }
+}
+
+.mapArea {
+  flex: 1;
+  height: 100%;
+}
+
+/* Mobile layout */
+.mobile {
+  height: 100%;
+  position: relative;
+}
+
+.mobileDetail {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-height: 70vh;
+  overflow-y: auto;
+  z-index: 200;
+}
+
+.fab {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--amber);
+  color: var(--bg-deep);
+  border: none;
+  font-size: 1.5rem;
+  font-weight: 300;
+  cursor: pointer;
+  z-index: 300;
+  box-shadow: 0 4px 16px rgba(240, 180, 41, 0.4);
+  transition: transform 0.15s;
+}
+
+.fab:hover {
+  transform: scale(1.08);
+}
+
+.nameChip {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.25rem 0.75rem;
+  color: var(--text-muted);
+  font-family: var(--font-ui);
+  font-size: 0.8125rem;
+  cursor: pointer;
+  z-index: 400;
+}

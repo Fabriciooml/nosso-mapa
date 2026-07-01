@@ -1,0 +1,38 @@
+:root {
+  --bg-deep: #060b18;
+  --bg-panel: #0b1120;
+  --bg-surface: #111827;
+  --bg-hover: #151f30;
+  --bg-selected: #0d1f3c;
+  --border: #1a2640;
+  --text-primary: #e8edf5;
+  --text-muted: #4a5a72;
+  --amber: #f0b429;
+  --blue: #4a9eff;
+  --rose: #ff6b9d;
+  --slate: #3d4a5c;
+
+  --font-display: 'Fraunces', serif;
+  --font-ui: 'IBM Plex Sans', sans-serif;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-ui);
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+.app {
+  height: 100%;
+}
