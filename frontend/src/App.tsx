@@ -114,6 +114,9 @@ export default function App() {
               categoryFilter={categoryFilter}
               onCategoryToggle={toggleCategory}
               categories={categories}
+              onScreenOnly={onScreenOnly}
+              mapBounds={mapBounds}
+              onScreenOnlyToggle={() => setOnScreenOnly((v) => !v)}
             />
           )}
           <button

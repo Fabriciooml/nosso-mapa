@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, it, expect, vi } from 'vitest'
 import { BottomSheet } from './BottomSheet'
-import type { Place } from '../types'
+import type { Place, MapBounds } from '../types'
 
 const PLACE: Place = {
   id: 1,
@@ -27,6 +27,9 @@ const defaultProps = {
   categoryFilter: [] as number[],
   onCategoryToggle: vi.fn(),
   categories: [],
+  onScreenOnly: false,
+  mapBounds: null as MapBounds | null,
+  onScreenOnlyToggle: vi.fn(),
 }
 
 describe('BottomSheet', () => {
@@ -47,5 +50,20 @@ describe('BottomSheet', () => {
     render(<BottomSheet {...defaultProps} onSelect={onSelect} />)
     await userEvent.click(screen.getByText('Café Central'))
     expect(onSelect).toHaveBeenCalledWith(1)
+  })
+
+  it('shows place when onScreenOnly=true and place is in bounds', () => {
+    // PLACE is at lat:0, lng:0 — inside bounds [-1,1] x [-1,1]
+    const bounds: MapBounds = { north: 1, south: -1, east: 1, west: -1 }
+    render(<BottomSheet {...defaultProps} onScreenOnly={true} mapBounds={bounds} />)
+    expect(screen.getByText('Café Central')).toBeInTheDocument()
+  })
+
+  it('shows empty state when onScreenOnly=true and place is outside bounds', () => {
+    // PLACE is at lat:0, lng:0 — outside bounds [5,10] x [5,10]
+    const bounds: MapBounds = { north: 10, south: 5, east: 10, west: 5 }
+    render(<BottomSheet {...defaultProps} onScreenOnly={true} mapBounds={bounds} />)
+    expect(screen.getByText('Nenhum lugar nesta área')).toBeInTheDocument()
+    expect(screen.queryByText('Café Central')).not.toBeInTheDocument()
   })
 })
