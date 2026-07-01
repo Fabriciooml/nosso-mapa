@@ -10,7 +10,7 @@ import { ListPanel } from './components/ListPanel'
 import { BottomSheet } from './components/BottomSheet'
 import { PlaceDetail } from './components/PlaceDetail'
 import { AddPlaceModal } from './components/AddPlaceModal'
-import type { PlaceStatus } from './types'
+import type { PlaceStatus, MapBounds } from './types'
 import styles from './App.module.css'
 
 const DEFAULT_CENTER = { lat: -19.9186, lng: -43.9388 } // Praça Sete de Setembro, BH
@@ -23,14 +23,16 @@ export default function App() {
 
   const [centerLat, setCenterLat] = useState(DEFAULT_CENTER.lat)
   const [centerLng, setCenterLng] = useState(DEFAULT_CENTER.lng)
+  const [_mapBounds, setMapBounds] = useState<MapBounds | null>(null)
   const [selectedId, setSelectedId] = useState<number | null>(null)
   const [showAdd, setShowAdd] = useState(false)
   const [statusFilter, setStatusFilter] = useState<PlaceStatus[]>([])
   const [categoryFilter, setCategoryFilter] = useState<number[]>([])
 
-  const handleCameraChanged = useCallback((lat: number, lng: number) => {
+  const handleCameraChanged = useCallback((lat: number, lng: number, bounds: MapBounds) => {
     setCenterLat(lat)
     setCenterLng(lng)
+    setMapBounds(bounds)
   }, [])
 
   function toggleStatus(s: PlaceStatus) {

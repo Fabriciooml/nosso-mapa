@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react'
 import { Map, AdvancedMarker, useMap } from '@vis.gl/react-google-maps'
-import type { Place } from '../types'
+import type { Place, MapBounds } from '../types'
 import type { Position } from '../hooks/useGeolocation'
 import styles from './MapView.module.css'
 
@@ -33,7 +33,7 @@ interface Props {
   places: Place[]
   selectedId: number | null
   onMarkerClick: (id: number) => void
-  onCameraChanged: (lat: number, lng: number) => void
+  onCameraChanged: (lat: number, lng: number, bounds: MapBounds) => void
   defaultCenter: { lat: number; lng: number }
   userPosition: Position | null
 }
@@ -47,8 +47,8 @@ export function MapView({
   userPosition,
 }: Props) {
   const handleCameraChange = useCallback(
-    (ev: { detail: { center: { lat: number; lng: number } } }) => {
-      onCameraChanged(ev.detail.center.lat, ev.detail.center.lng)
+    (ev: { detail: { center: { lat: number; lng: number }; bounds: MapBounds } }) => {
+      onCameraChanged(ev.detail.center.lat, ev.detail.center.lng, ev.detail.bounds)
     },
     [onCameraChanged],
   )
