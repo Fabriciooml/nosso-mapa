@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react'
 import { Map, AdvancedMarker, useMap } from '@vis.gl/react-google-maps'
 import type { Place } from '../types'
+import type { Position } from '../hooks/useGeolocation'
 import styles from './MapView.module.css'
 
 const STATUS_COLORS: Record<string, string> = {
@@ -8,8 +9,6 @@ const STATUS_COLORS: Record<string, string> = {
   gone: '#3d4a5c',
   repeat: '#ff6b9d',
 }
-
-type Position = { lat: number; lng: number }
 
 function GeolocationLayer({ position }: { position: Position | null }) {
   const map = useMap()
