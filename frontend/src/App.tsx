@@ -3,6 +3,7 @@ import { APIProvider } from '@vis.gl/react-google-maps'
 import { useIdentity } from './hooks/useIdentity'
 import { usePlaces } from './hooks/usePlaces'
 import { useCategories } from './hooks/useCategories'
+import { useGeolocation } from './hooks/useGeolocation'
 import { IdentityModal } from './components/IdentityModal'
 import { MapView } from './components/MapView'
 import { ListPanel } from './components/ListPanel'
@@ -12,12 +13,13 @@ import { AddPlaceModal } from './components/AddPlaceModal'
 import type { PlaceStatus } from './types'
 import styles from './App.module.css'
 
-const DEFAULT_CENTER = { lat: 38.7169, lng: -9.1399 } // Lisbon
+const DEFAULT_CENTER = { lat: -19.9186, lng: -43.9388 } // Praça Sete de Setembro, BH
 
 export default function App() {
   const { name, setName, clearName } = useIdentity()
   const { data: places = [] } = usePlaces()
   const { data: categories = [] } = useCategories()
+  const userPosition = useGeolocation()
 
   const [centerLat, setCenterLat] = useState(DEFAULT_CENTER.lat)
   const [centerLng, setCenterLng] = useState(DEFAULT_CENTER.lng)
@@ -75,6 +77,7 @@ export default function App() {
               onMarkerClick={setSelectedId}
               onCameraChanged={handleCameraChanged}
               defaultCenter={DEFAULT_CENTER}
+              userPosition={userPosition}
             />
           </div>
         </div>
@@ -87,6 +90,7 @@ export default function App() {
             onMarkerClick={setSelectedId}
             onCameraChanged={handleCameraChanged}
             defaultCenter={DEFAULT_CENTER}
+            userPosition={userPosition}
           />
           {selectedPlace ? (
             <div className={styles.mobileDetail}>
