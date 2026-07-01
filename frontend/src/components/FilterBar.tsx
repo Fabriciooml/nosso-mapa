@@ -7,6 +7,9 @@ interface Props {
   categoryFilter: number[]
   onCategoryToggle: (id: number) => void
   categories: Category[]
+  onScreenOnly?: boolean
+  onScreenOnlyToggle?: () => void
+  boundsReady?: boolean
 }
 
 const STATUS_LABELS: Record<PlaceStatus, string> = {
@@ -27,9 +30,24 @@ export function FilterBar({
   categoryFilter,
   onCategoryToggle,
   categories,
+  onScreenOnly = false,
+  onScreenOnlyToggle,
+  boundsReady = false,
 }: Props) {
   return (
     <div className={styles.bar}>
+      {onScreenOnlyToggle && (
+        <div className={styles.group}>
+          <button
+            className={`${styles.chip} ${onScreenOnly ? styles.active : ''}`}
+            onClick={onScreenOnlyToggle}
+            aria-pressed={onScreenOnly}
+            disabled={!boundsReady}
+          >
+            Na tela
+          </button>
+        </div>
+      )}
       <div className={styles.group}>
         {(['to_go', 'gone', 'repeat'] as PlaceStatus[]).map((s) => {
           const active = statusFilter.includes(s)
