@@ -29,6 +29,7 @@ describe('useGeolocation', () => {
   })
 
   it('returns null on error', async () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
     vi.stubGlobal('navigator', {
       geolocation: {
         getCurrentPosition: vi.fn(
@@ -40,6 +41,7 @@ describe('useGeolocation', () => {
     const { result } = renderHook(() => useGeolocation())
     await new Promise((r) => setTimeout(r, 10))
     expect(result.current).toBeNull()
+    warnSpy.mockRestore()
   })
 
   it('calls getCurrentPosition with correct options', () => {

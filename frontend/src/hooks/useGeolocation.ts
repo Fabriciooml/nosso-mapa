@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 
-type Position = { lat: number; lng: number }
+export type Position = { lat: number; lng: number }
 
 export function useGeolocation(): Position | null {
   const [position, setPosition] = useState<Position | null>(null)
