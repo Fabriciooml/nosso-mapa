@@ -75,6 +75,7 @@ export default function App() {
               onMarkerClick={setSelectedId}
               onCameraChanged={handleCameraChanged}
               defaultCenter={DEFAULT_CENTER}
+              userPosition={null}
             />
           </div>
         </div>
@@ -87,6 +88,7 @@ export default function App() {
             onMarkerClick={setSelectedId}
             onCameraChanged={handleCameraChanged}
             defaultCenter={DEFAULT_CENTER}
+            userPosition={null}
           />
           {selectedPlace ? (
             <div className={styles.mobileDetail}>
