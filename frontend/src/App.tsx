@@ -23,16 +23,14 @@ export default function App() {
 
   const [centerLat, setCenterLat] = useState(DEFAULT_CENTER.lat)
   const [centerLng, setCenterLng] = useState(DEFAULT_CENTER.lng)
-  const [mapBounds, setMapBounds] = useState<MapBounds | null>(null)
   const [selectedId, setSelectedId] = useState<number | null>(null)
   const [showAdd, setShowAdd] = useState(false)
   const [statusFilter, setStatusFilter] = useState<PlaceStatus[]>([])
   const [categoryFilter, setCategoryFilter] = useState<number[]>([])
 
-  const handleCameraChanged = useCallback((lat: number, lng: number, bounds: MapBounds) => {
+  const handleCameraChanged = useCallback((lat: number, lng: number, _bounds: MapBounds) => {
     setCenterLat(lat)
     setCenterLng(lng)
-    setMapBounds(bounds)
   }, [])
 
   function toggleStatus(s: PlaceStatus) {
