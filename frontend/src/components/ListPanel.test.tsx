@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, it, expect, vi } from 'vitest'
 import { ListPanel } from './ListPanel'
-import type { Place } from '../types'
+import type { Place, MapBounds } from '../types'
 
 const PLACES: Place[] = [
   {
@@ -41,6 +41,9 @@ const defaultProps = {
   categoryFilter: [] as number[],
   onCategoryToggle: vi.fn(),
   categories: [],
+  onScreenOnly: false,
+  mapBounds: null as MapBounds | null,
+  onScreenOnlyToggle: vi.fn(),
 }
 
 describe('ListPanel', () => {
@@ -75,5 +78,29 @@ describe('ListPanel', () => {
     render(<ListPanel {...defaultProps} statusFilter={['to_go']} />)
     expect(screen.getByText('Lugar Perto')).toBeInTheDocument()
     expect(screen.queryByText('Lugar Longe')).not.toBeInTheDocument()
+  })
+
+  it('shows all places when onScreenOnly=false regardless of mapBounds', () => {
+    const bounds: MapBounds = { north: 2, south: 0, east: 2, west: 0 }
+    // Lugar Longe (lat:10, lng:10) would be outside, but onScreenOnly=false
+    render(<ListPanel {...defaultProps} onScreenOnly={false} mapBounds={bounds} />)
+    expect(screen.getByText('Lugar Perto')).toBeInTheDocument()
+    expect(screen.getByText('Lugar Longe')).toBeInTheDocument()
+  })
+
+  it('filters to bounds when onScreenOnly=true', () => {
+    // bounds covers lat 0-2, lng 0-2 — Lugar Perto (1,1) in, Lugar Longe (10,10) out
+    const bounds: MapBounds = { north: 2, south: 0, east: 2, west: 0 }
+    render(<ListPanel {...defaultProps} onScreenOnly={true} mapBounds={bounds} />)
+    expect(screen.getByText('Lugar Perto')).toBeInTheDocument()
+    expect(screen.queryByText('Lugar Longe')).not.toBeInTheDocument()
+  })
+
+  it('shows empty state when onScreenOnly=true and no places in bounds', () => {
+    // bounds far from both places
+    const bounds: MapBounds = { north: -10, south: -20, east: -10, west: -20 }
+    render(<ListPanel {...defaultProps} onScreenOnly={true} mapBounds={bounds} />)
+    expect(screen.getByText('Nenhum lugar nesta área')).toBeInTheDocument()
+    expect(screen.queryByText('Lugar Perto')).not.toBeInTheDocument()
   })
 })

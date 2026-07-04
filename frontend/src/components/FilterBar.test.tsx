@@ -59,3 +59,43 @@ describe('FilterBar', () => {
     expect(screen.queryByText('Café')).not.toBeInTheDocument()
   })
 })
+
+describe('FilterBar — Na tela toggle', () => {
+  const toggleProps = {
+    ...defaultProps,
+    onScreenOnlyToggle: vi.fn(),
+    boundsReady: true,
+  }
+
+  it('renders Na tela chip when onScreenOnlyToggle provided', () => {
+    render(<FilterBar {...toggleProps} />)
+    expect(screen.getByText('Na tela')).toBeInTheDocument()
+  })
+
+  it('does not render Na tela chip when onScreenOnlyToggle omitted', () => {
+    render(<FilterBar {...defaultProps} />)
+    expect(screen.queryByText('Na tela')).not.toBeInTheDocument()
+  })
+
+  it('chip has aria-pressed=false when onScreenOnly=false', () => {
+    render(<FilterBar {...toggleProps} onScreenOnly={false} />)
+    expect(screen.getByText('Na tela').closest('button')).toHaveAttribute('aria-pressed', 'false')
+  })
+
+  it('chip has aria-pressed=true when onScreenOnly=true', () => {
+    render(<FilterBar {...toggleProps} onScreenOnly={true} />)
+    expect(screen.getByText('Na tela').closest('button')).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  it('calls onScreenOnlyToggle when chip clicked', async () => {
+    const onScreenOnlyToggle = vi.fn()
+    render(<FilterBar {...toggleProps} onScreenOnlyToggle={onScreenOnlyToggle} />)
+    await userEvent.click(screen.getByText('Na tela'))
+    expect(onScreenOnlyToggle).toHaveBeenCalledOnce()
+  })
+
+  it('chip is disabled when boundsReady=false', () => {
+    render(<FilterBar {...toggleProps} boundsReady={false} />)
+    expect(screen.getByText('Na tela').closest('button')).toBeDisabled()
+  })
+})

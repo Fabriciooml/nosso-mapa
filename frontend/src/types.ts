@@ -29,3 +29,10 @@ export interface ReviewCreate {
   reviewer: string
   rating: number
 }
+
+export interface MapBounds {
+  north: number
+  south: number
+  east: number
+  west: number
+}

@@ -45,3 +45,11 @@
   cursor: pointer;
   width: calc(100% - 1.5rem);
 }
+
+.emptyArea {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--text-muted);
+  font-family: var(--font-ui);
+  font-size: 0.875rem;
+}
