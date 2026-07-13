@@ -97,3 +97,17 @@ def create_review(place_id: int, body: ReviewCreate):
         return _fetch_place(conn, place_id)
     finally:
         conn.close()
+
+
+@router.delete("/{place_id}", status_code=204)
+def delete_place(place_id: int):
+    conn = get_db()
+    try:
+        _fetch_place(conn, place_id)  # raises 404 if not found or already deleted
+        conn.execute(
+            "UPDATE places SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?",
+            (place_id,),
+        )
+        conn.commit()
+    finally:
+        conn.close()

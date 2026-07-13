@@ -136,3 +136,37 @@ def test_place_response_has_description_null(client):
     body = client.post("/api/places", json=PLACE_PAYLOAD).json()
     assert "description" in body
     assert body["description"] is None
+
+
+# --- soft delete ---
+
+def test_delete_place_returns_204(client):
+    place_id = client.post("/api/places", json=PLACE_PAYLOAD).json()["id"]
+    response = client.delete(f"/api/places/{place_id}")
+    assert response.status_code == 204
+
+
+def test_delete_nonexistent_place_returns_404(client):
+    response = client.delete("/api/places/9999")
+    assert response.status_code == 404
+
+
+def test_delete_already_deleted_place_returns_404(client):
+    place_id = client.post("/api/places", json=PLACE_PAYLOAD).json()["id"]
+    client.delete(f"/api/places/{place_id}")
+    response = client.delete(f"/api/places/{place_id}")
+    assert response.status_code == 404
+
+
+def test_deleted_place_excluded_from_list(client):
+    place_id = client.post("/api/places", json=PLACE_PAYLOAD).json()["id"]
+    client.delete(f"/api/places/{place_id}")
+    places = client.get("/api/places").json()
+    assert places == []
+
+
+def test_deleted_place_status_update_returns_404(client):
+    place_id = client.post("/api/places", json=PLACE_PAYLOAD).json()["id"]
+    client.delete(f"/api/places/{place_id}")
+    response = client.patch(f"/api/places/{place_id}/status", json={"status": "gone"})
+    assert response.status_code == 404
