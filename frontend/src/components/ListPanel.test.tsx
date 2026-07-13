@@ -8,6 +8,8 @@ const PLACES: Place[] = [
   {
     id: 1,
     name: 'Lugar Perto',
+    alias: null,
+    description: null,
     google_place_id: null,
     lat: 1,
     lng: 1,
@@ -19,6 +21,8 @@ const PLACES: Place[] = [
   {
     id: 2,
     name: 'Lugar Longe',
+    alias: null,
+    description: null,
     google_place_id: null,
     lat: 10,
     lng: 10,

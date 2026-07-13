@@ -7,6 +7,8 @@ import type { Place, MapBounds } from '../types'
 const PLACE: Place = {
   id: 1,
   name: 'Café Central',
+  alias: null,
+  description: null,
   google_place_id: null,
   lat: 0,
   lng: 0,

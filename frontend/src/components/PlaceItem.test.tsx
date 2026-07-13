@@ -7,6 +7,8 @@ import type { Place } from '../types'
 const PLACE: Place = {
   id: 1,
   name: 'Cantinho do Avillez',
+  alias: null,
+  description: null,
   google_place_id: null,
   lat: 38.71,
   lng: -9.14,
