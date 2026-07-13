@@ -26,6 +26,9 @@ def init_db() -> None:
             lat             REAL NOT NULL,
             lng             REAL NOT NULL,
             status          TEXT NOT NULL DEFAULT 'to_go',
+            alias           TEXT,
+            description     TEXT,
+            deleted_at      DATETIME,
             created_at      DATETIME DEFAULT CURRENT_TIMESTAMP
         );
 
@@ -46,5 +49,15 @@ def init_db() -> None:
         INSERT OR IGNORE INTO categories (name) VALUES
             ('Restaurante'), ('Café'), ('Museu'), ('Cinema'), ('Lanche');
     """)
+    # Migrate existing DBs — silently skip if columns already exist
+    for ddl in [
+        "ALTER TABLE places ADD COLUMN alias TEXT",
+        "ALTER TABLE places ADD COLUMN description TEXT",
+        "ALTER TABLE places ADD COLUMN deleted_at DATETIME",
+    ]:
+        try:
+            conn.execute(ddl)
+        except Exception:
+            pass
     conn.commit()
     conn.close()
