@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import type { Place, PlaceStatus } from '../types'
 import { StarRating } from './StarRating'
-import { useUpdateStatus } from '../hooks/usePlaces'
-import { useAddReview } from '../hooks/usePlaces'
+import { useUpdateStatus, useAddReview, useDeletePlace } from '../hooks/usePlaces'
 import { useIdentity } from '../hooks/useIdentity'
+import { EditPlaceModal } from './EditPlaceModal'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import styles from './PlaceDetail.module.css'
 
 interface Props {
@@ -21,7 +23,9 @@ export function PlaceDetail({ place, onClose }: Props) {
   const { name: reviewer } = useIdentity()
   const updateStatus = useUpdateStatus()
   const addReview = useAddReview()
+  const deletePlace = useDeletePlace()
   const [showReview, setShowReview] = useState(false)
+  const [showEdit, setShowEdit] = useState(false)
   const [rating, setRating] = useState(3.0)
 
   function handleStatusChange(status: PlaceStatus) {
@@ -36,13 +40,25 @@ export function PlaceDetail({ place, onClose }: Props) {
     )
   }
 
+  function handleDelete() {
+    if (!window.confirm('Excluir lugar?')) return
+    deletePlace.mutate(place.id, { onSuccess: onClose })
+  }
+
   return (
     <div className={styles.panel}>
       <button className={styles.close} onClick={onClose} aria-label="Fechar">✕</button>
-      <h2 className={styles.name}>{place.name}</h2>
+      <h2 className={styles.name}>{place.alias ?? place.name}</h2>
       <p className={styles.categories}>
         {place.categories.map((c) => c.name).join(' · ')}
       </p>
+
+      {place.description && (
+        <div className={styles.description} data-testid="description">
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{place.description}</ReactMarkdown>
+        </div>
+      )}
+
       <div className={styles.rating}>
         <StarRating mode="display" value={place.avg_rating} />
         {place.avg_rating !== null && (
@@ -79,6 +95,19 @@ export function PlaceDetail({ place, onClose }: Props) {
             </button>
           </div>
         </div>
+      )}
+
+      <div className={styles.actionRow}>
+        <button className={styles.editBtn} onClick={() => setShowEdit(true)}>
+          Editar
+        </button>
+        <button className={styles.deleteBtn} onClick={handleDelete}>
+          Excluir
+        </button>
+      </div>
+
+      {showEdit && (
+        <EditPlaceModal place={place} onClose={() => setShowEdit(false)} />
       )}
     </div>
   )

@@ -112,3 +112,51 @@
   font-size: 0.875rem;
   cursor: pointer;
 }
+
+.description {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.description p {
+  margin: 0 0 0.5rem;
+}
+
+.description h1,
+.description h2,
+.description h3 {
+  font-family: var(--font-ui);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0.75rem 0 0.25rem;
+}
+
+.actionRow {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.editBtn {
+  flex: 1;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  color: var(--text-muted);
+  font-family: var(--font-ui);
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.deleteBtn {
+  background: none;
+  border: 1px solid #c53030;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  color: #c53030;
+  font-family: var(--font-ui);
+  font-size: 0.875rem;
+  cursor: pointer;
+}
