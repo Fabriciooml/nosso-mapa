@@ -228,3 +228,45 @@ def test_update_nonexistent_place_returns_404(client):
         "alias": "test", "description": None, "category_ids": []
     })
     assert response.status_code == 404
+
+
+# --- deduplication on create ---
+
+def test_create_duplicate_active_returns_409(client):
+    client.post("/api/places", json=PLACE_PAYLOAD)
+    response = client.post("/api/places", json=PLACE_PAYLOAD)
+    assert response.status_code == 409
+
+
+def test_create_restores_soft_deleted_place(client):
+    place_id = client.post("/api/places", json=PLACE_PAYLOAD).json()["id"]
+    client.delete(f"/api/places/{place_id}")
+    response = client.post("/api/places", json=PLACE_PAYLOAD)
+    assert response.status_code == 200
+    assert response.json()["id"] == place_id
+
+
+def test_create_restore_updates_name_and_coords(client):
+    place_id = client.post("/api/places", json=PLACE_PAYLOAD).json()["id"]
+    client.delete(f"/api/places/{place_id}")
+    new_payload = {**PLACE_PAYLOAD, "name": "Restaurante Novo Nome", "lat": 38.72, "lng": -9.14}
+    response = client.post("/api/places", json=new_payload)
+    assert response.status_code == 200
+    body = response.json()
+    assert body["name"] == "Restaurante Novo Nome"
+    assert body["lat"] == 38.72
+
+
+def test_create_restore_appears_in_list(client):
+    place_id = client.post("/api/places", json=PLACE_PAYLOAD).json()["id"]
+    client.delete(f"/api/places/{place_id}")
+    client.post("/api/places", json=PLACE_PAYLOAD)
+    places = client.get("/api/places").json()
+    assert len(places) == 1
+
+
+def test_create_no_google_place_id_no_dedup(client):
+    payload = {**PLACE_PAYLOAD, "google_place_id": None}
+    client.post("/api/places", json=payload)
+    response = client.post("/api/places", json=payload)
+    assert response.status_code == 201

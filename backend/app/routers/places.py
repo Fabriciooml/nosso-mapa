@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Response
 from ..database import get_db
 from ..models import PlaceCreate, PlaceOut, PlaceStatusUpdate, PlaceUpdate, ReviewCreate
 
@@ -42,15 +42,42 @@ def list_places():
 
 
 @router.post("", response_model=PlaceOut, status_code=201)
-def create_place(body: PlaceCreate):
+def create_place(body: PlaceCreate, response: Response):
     conn = get_db()
     try:
-        # Validate category ids exist
         for cat_id in body.category_ids:
             if not conn.execute(
                 "SELECT id FROM categories WHERE id = ?", (cat_id,)
             ).fetchone():
                 raise HTTPException(422, f"Category {cat_id} not found")
+
+        if body.google_place_id:
+            active = conn.execute(
+                "SELECT id FROM places WHERE google_place_id = ? AND deleted_at IS NULL",
+                (body.google_place_id,),
+            ).fetchone()
+            if active:
+                raise HTTPException(409, "Lugar já está na lista")
+
+            deleted = conn.execute(
+                "SELECT id FROM places WHERE google_place_id = ? AND deleted_at IS NOT NULL",
+                (body.google_place_id,),
+            ).fetchone()
+            if deleted:
+                place_id = deleted["id"]
+                conn.execute(
+                    "UPDATE places SET deleted_at = NULL, name = ?, lat = ?, lng = ? WHERE id = ?",
+                    (body.name, body.lat, body.lng, place_id),
+                )
+                conn.execute("DELETE FROM place_categories WHERE place_id = ?", (place_id,))
+                for cat_id in body.category_ids:
+                    conn.execute(
+                        "INSERT INTO place_categories (place_id, category_id) VALUES (?, ?)",
+                        (place_id, cat_id),
+                    )
+                conn.commit()
+                response.status_code = 200
+                return _fetch_place(conn, place_id)
 
         cur = conn.execute(
             "INSERT INTO places (name, google_place_id, lat, lng) VALUES (?, ?, ?, ?)",
