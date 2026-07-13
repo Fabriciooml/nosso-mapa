@@ -13,6 +13,8 @@ export interface Place {
   lng: number
   status: PlaceStatus
   avg_rating: number | null
+  alias: string | null
+  description: string | null
   categories: Category[]
   created_at: string
 }
@@ -22,6 +24,12 @@ export interface PlaceCreate {
   google_place_id: string | null
   lat: number
   lng: number
+  category_ids: number[]
+}
+
+export interface PlaceUpdate {
+  alias: string | null
+  description: string | null
   category_ids: number[]
 }
 

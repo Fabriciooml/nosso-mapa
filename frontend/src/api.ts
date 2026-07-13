@@ -1,4 +1,4 @@
-import type { Category, Place, PlaceCreate, PlaceStatus, ReviewCreate } from './types'
+import type { Category, Place, PlaceCreate, PlaceStatus, PlaceUpdate, ReviewCreate } from './types'
 
 const BASE = '/api'
 
@@ -8,6 +8,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     ...init,
   })
   if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
+  if (res.status === 204) return undefined as T
   return res.json() as Promise<T>
 }
 
@@ -16,6 +17,10 @@ export const api = {
     list: () => request<Place[]>('/places'),
     create: (body: PlaceCreate) =>
       request<Place>('/places', { method: 'POST', body: JSON.stringify(body) }),
+    update: (id: number, body: PlaceUpdate) =>
+      request<Place>(`/places/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
+    delete: (id: number) =>
+      request<void>(`/places/${id}`, { method: 'DELETE' }),
     updateStatus: (id: number, status: PlaceStatus) =>
       request<Place>(`/places/${id}/status`, {
         method: 'PATCH',

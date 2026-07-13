@@ -28,6 +28,8 @@ const PLACE: Place = {
   lng: -9.203,
   status: 'to_go',
   avg_rating: 4.5,
+  alias: null,
+  description: null,
   categories: [{ id: 1, name: 'Café' }],
   created_at: '2026-01-01T00:00:00',
 }

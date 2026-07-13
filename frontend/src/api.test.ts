@@ -19,6 +19,13 @@ function mockError(status: number) {
   })
 }
 
+function mockNoContent() {
+  mockFetch.mockResolvedValueOnce({
+    ok: true,
+    status: 204,
+  })
+}
+
 beforeEach(() => {
   mockFetch.mockClear()
 })
@@ -54,6 +61,28 @@ describe('api.places', () => {
   it('throws on non-ok response', async () => {
     mockError(404)
     await expect(api.places.list()).rejects.toThrow('404')
+  })
+
+  it('update calls PUT /api/places/:id with body', async () => {
+    const place = { id: 1, name: 'X', lat: 0, lng: 0, status: 'to_go', avg_rating: null,
+      categories: [], created_at: '', google_place_id: null, alias: 'Xpto', description: null }
+    mockOk(place)
+    await api.places.update(1, { alias: 'Xpto', description: null, category_ids: [] })
+    expect(mockFetch).toHaveBeenCalledWith('/api/places/1', expect.objectContaining({ method: 'PUT' }))
+  })
+
+  it('delete calls DELETE /api/places/:id and returns undefined', async () => {
+    mockNoContent()
+    const result = await api.places.delete(1)
+    expect(mockFetch).toHaveBeenCalledWith('/api/places/1', expect.objectContaining({ method: 'DELETE' }))
+    expect(result).toBeUndefined()
+  })
+
+  it('request handles 204 without calling json()', async () => {
+    const jsonSpy = vi.fn()
+    mockFetch.mockResolvedValueOnce({ ok: true, status: 204, json: jsonSpy })
+    await api.places.delete(1)
+    expect(jsonSpy).not.toHaveBeenCalled()
   })
 })
 
