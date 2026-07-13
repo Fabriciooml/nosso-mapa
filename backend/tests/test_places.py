@@ -270,3 +270,23 @@ def test_create_no_google_place_id_no_dedup(client):
     client.post("/api/places", json=payload)
     response = client.post("/api/places", json=payload)
     assert response.status_code == 201
+
+
+def test_update_place_invalid_category_id_raises_422(client):
+    place_id = client.post("/api/places", json=PLACE_PAYLOAD).json()["id"]
+    response = client.put(f"/api/places/{place_id}", json={
+        "alias": None, "description": None, "category_ids": [999]
+    })
+    assert response.status_code == 422
+
+
+def test_create_restore_preserves_alias_and_description(client):
+    # Create a place, edit it to set alias/description, delete it, restore it
+    place_id = client.post("/api/places", json=PLACE_PAYLOAD).json()["id"]
+    client.put(f"/api/places/{place_id}", json={
+        "alias": "Meu Favorito", "description": "Ótimo lugar", "category_ids": []
+    })
+    client.delete(f"/api/places/{place_id}")
+    body = client.post("/api/places", json=PLACE_PAYLOAD).json()
+    assert body["alias"] == "Meu Favorito"
+    assert body["description"] == "Ótimo lugar"

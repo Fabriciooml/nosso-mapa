@@ -145,6 +145,11 @@ def update_place(place_id: int, body: PlaceUpdate):
     conn = get_db()
     try:
         _fetch_place(conn, place_id)  # raises 404 if not found or deleted
+        for cat_id in body.category_ids:
+            if not conn.execute(
+                "SELECT id FROM categories WHERE id = ?", (cat_id,)
+            ).fetchone():
+                raise HTTPException(422, f"Category {cat_id} not found")
         conn.execute(
             "UPDATE places SET alias = ?, description = ? WHERE id = ?",
             (body.alias, body.description, place_id),

@@ -57,7 +57,7 @@ def init_db() -> None:
     ]:
         try:
             conn.execute(ddl)
-        except Exception:
+        except sqlite3.OperationalError:
             pass
     conn.commit()
     conn.close()
