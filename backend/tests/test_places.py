@@ -170,3 +170,61 @@ def test_deleted_place_status_update_returns_404(client):
     client.delete(f"/api/places/{place_id}")
     response = client.patch(f"/api/places/{place_id}/status", json={"status": "gone"})
     assert response.status_code == 404
+
+
+# --- edit place ---
+
+def test_update_place_alias(client):
+    place_id = client.post("/api/places", json=PLACE_PAYLOAD).json()["id"]
+    response = client.put(f"/api/places/{place_id}", json={
+        "alias": "Itália Meu Amor", "description": None, "category_ids": []
+    })
+    assert response.status_code == 200
+    assert response.json()["alias"] == "Itália Meu Amor"
+
+
+def test_update_place_description(client):
+    place_id = client.post("/api/places", json=PLACE_PAYLOAD).json()["id"]
+    response = client.put(f"/api/places/{place_id}", json={
+        "alias": None, "description": "# Bom lugar\nÓtima comida.", "category_ids": []
+    })
+    assert response.status_code == 200
+    assert response.json()["description"] == "# Bom lugar\nÓtima comida."
+
+
+def test_update_place_replaces_categories(client):
+    cat_id = _cat_id(client, "Café")
+    place_id = client.post("/api/places", json={**PLACE_PAYLOAD, "category_ids": [cat_id]}).json()["id"]
+    cat2_id = _cat_id(client, "Museu")
+    response = client.put(f"/api/places/{place_id}", json={
+        "alias": None, "description": None, "category_ids": [cat2_id]
+    })
+    assert response.status_code == 200
+    names = [c["name"] for c in response.json()["categories"]]
+    assert names == ["Museu"]
+
+
+def test_update_place_clears_categories(client):
+    cat_id = _cat_id(client, "Café")
+    place_id = client.post("/api/places", json={**PLACE_PAYLOAD, "category_ids": [cat_id]}).json()["id"]
+    response = client.put(f"/api/places/{place_id}", json={
+        "alias": None, "description": None, "category_ids": []
+    })
+    assert response.status_code == 200
+    assert response.json()["categories"] == []
+
+
+def test_update_deleted_place_returns_404(client):
+    place_id = client.post("/api/places", json=PLACE_PAYLOAD).json()["id"]
+    client.delete(f"/api/places/{place_id}")
+    response = client.put(f"/api/places/{place_id}", json={
+        "alias": "test", "description": None, "category_ids": []
+    })
+    assert response.status_code == 404
+
+
+def test_update_nonexistent_place_returns_404(client):
+    response = client.put("/api/places/9999", json={
+        "alias": "test", "description": None, "category_ids": []
+    })
+    assert response.status_code == 404

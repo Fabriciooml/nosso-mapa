@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from ..database import get_db
-from ..models import PlaceCreate, PlaceOut, PlaceStatusUpdate, ReviewCreate
+from ..models import PlaceCreate, PlaceOut, PlaceStatusUpdate, PlaceUpdate, ReviewCreate
 
 router = APIRouter(prefix="/api/places", tags=["places"])
 
@@ -109,5 +109,29 @@ def delete_place(place_id: int):
             (place_id,),
         )
         conn.commit()
+    finally:
+        conn.close()
+
+
+@router.put("/{place_id}", response_model=PlaceOut)
+def update_place(place_id: int, body: PlaceUpdate):
+    conn = get_db()
+    try:
+        _fetch_place(conn, place_id)  # raises 404 if not found or deleted
+        conn.execute(
+            "UPDATE places SET alias = ?, description = ? WHERE id = ?",
+            (body.alias, body.description, place_id),
+        )
+        conn.execute(
+            "DELETE FROM place_categories WHERE place_id = ?",
+            (place_id,),
+        )
+        for cat_id in body.category_ids:
+            conn.execute(
+                "INSERT INTO place_categories (place_id, category_id) VALUES (?, ?)",
+                (place_id, cat_id),
+            )
+        conn.commit()
+        return _fetch_place(conn, place_id)
     finally:
         conn.close()
