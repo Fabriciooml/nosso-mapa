@@ -30,6 +30,12 @@ class PlaceStatusUpdate(BaseModel):
         return v
 
 
+class PlaceUpdate(BaseModel):
+    alias: Optional[str] = None
+    description: Optional[str] = None
+    category_ids: list[int]
+
+
 class ReviewCreate(BaseModel):
     reviewer: str
     rating: float
@@ -50,5 +56,7 @@ class PlaceOut(BaseModel):
     lng: float
     status: str
     avg_rating: Optional[float]
+    alias: Optional[str]
+    description: Optional[str]
     categories: list[CategoryOut]
     created_at: str

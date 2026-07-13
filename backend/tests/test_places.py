@@ -122,3 +122,17 @@ def test_review_out_of_range_rating_rejected(client):
     # above maximum
     r2 = client.post(f"/api/places/{place_id}/reviews", json={"reviewer": "Fab", "rating": 5.5})
     assert r2.status_code == 422
+
+
+# --- alias and description fields ---
+
+def test_place_response_has_alias_null(client):
+    body = client.post("/api/places", json=PLACE_PAYLOAD).json()
+    assert "alias" in body
+    assert body["alias"] is None
+
+
+def test_place_response_has_description_null(client):
+    body = client.post("/api/places", json=PLACE_PAYLOAD).json()
+    assert "description" in body
+    assert body["description"] is None

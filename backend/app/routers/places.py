@@ -8,10 +8,11 @@ router = APIRouter(prefix="/api/places", tags=["places"])
 def _fetch_place(conn, place_id: int) -> dict:
     row = conn.execute(
         """SELECT p.id, p.name, p.google_place_id, p.lat, p.lng,
-                  p.status, p.created_at, AVG(r.rating) AS avg_rating
+                  p.status, p.created_at, p.alias, p.description,
+                  AVG(r.rating) AS avg_rating
            FROM places p
            LEFT JOIN reviews r ON r.place_id = p.id
-           WHERE p.id = ?
+           WHERE p.id = ? AND p.deleted_at IS NULL
            GROUP BY p.id""",
         (place_id,),
     ).fetchone()
@@ -31,7 +32,9 @@ def list_places():
     conn = get_db()
     try:
         rows = conn.execute(
-            """SELECT p.id FROM places p ORDER BY p.created_at DESC"""
+            """SELECT p.id FROM places p
+               WHERE p.deleted_at IS NULL
+               ORDER BY p.created_at DESC"""
         ).fetchall()
         return [_fetch_place(conn, r["id"]) for r in rows]
     finally:
