@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '../api'
-import type { PlaceCreate, PlaceStatus, ReviewCreate } from '../types'
+import type { PlaceCreate, PlaceStatus, PlaceUpdate, ReviewCreate } from '../types'
 
 const PLACES_KEY = ['places'] as const
 
@@ -15,6 +15,23 @@ export function useCreatePlace() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (body: PlaceCreate) => api.places.create(body),
+    onSuccess: () => qc.invalidateQueries({ queryKey: PLACES_KEY }),
+  })
+}
+
+export function useUpdatePlace() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, body }: { id: number; body: PlaceUpdate }) =>
+      api.places.update(id, body),
+    onSuccess: () => qc.invalidateQueries({ queryKey: PLACES_KEY }),
+  })
+}
+
+export function useDeletePlace() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) => api.places.delete(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: PLACES_KEY }),
   })
 }
