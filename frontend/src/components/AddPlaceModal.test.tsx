@@ -9,8 +9,15 @@ vi.mock('@vis.gl/react-google-maps', () => ({
   useMapsLibrary: () => null,
 }))
 
+const createPlaceMock = {
+  mutate: vi.fn(),
+  isPending: false,
+  isError: false,
+  error: null as Error | null,
+}
+
 vi.mock('../hooks/usePlaces', () => ({
-  useCreatePlace: () => ({ mutate: vi.fn(), isPending: false }),
+  useCreatePlace: () => createPlaceMock,
 }))
 
 vi.mock('../hooks/useCategories', () => ({
@@ -25,6 +32,8 @@ function wrapper({ children }: { children: React.ReactNode }) {
 
 beforeEach(() => {
   vi.clearAllMocks()
+  createPlaceMock.isError = false
+  createPlaceMock.error = null
 })
 
 describe('AddPlaceModal', () => {
@@ -69,5 +78,17 @@ describe('AddPlaceModal', () => {
   it('+ button disabled when new category input is empty', () => {
     render(<AddPlaceModal onClose={vi.fn()} />, { wrapper })
     expect(screen.getByText('+')).toBeDisabled()
+  })
+
+  it('shows error message when place already in list (409)', () => {
+    createPlaceMock.isError = true
+    createPlaceMock.error = new Error('409 Conflict')
+    render(<AddPlaceModal onClose={vi.fn()} />, { wrapper })
+    expect(screen.getByText('Lugar já está na lista')).toBeInTheDocument()
+  })
+
+  it('does not show error when no error', () => {
+    render(<AddPlaceModal onClose={vi.fn()} />, { wrapper })
+    expect(screen.queryByText('Lugar já está na lista')).not.toBeInTheDocument()
   })
 })

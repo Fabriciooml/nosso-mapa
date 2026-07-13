@@ -27,6 +27,11 @@ export function AddPlaceModal({ onClose }: Props) {
   const createPlace = useCreatePlace()
   const createCategory = useCreateCategory()
 
+  const is409 =
+    createPlace.isError &&
+    createPlace.error instanceof Error &&
+    createPlace.error.message.startsWith('409')
+
   useEffect(() => {
     if (!placesLib || !inputRef.current) return
     const autocomplete = new placesLib.Autocomplete(inputRef.current, {
@@ -124,6 +129,10 @@ export function AddPlaceModal({ onClose }: Props) {
             </button>
           </div>
         </div>
+
+        {is409 && (
+          <p className={styles.error}>Lugar já está na lista</p>
+        )}
 
         <div className={styles.footer}>
           <button className={styles.cancelBtn} onClick={onClose}>Cancelar</button>

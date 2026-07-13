@@ -150,3 +150,10 @@
   opacity: 0.4;
   cursor: not-allowed;
 }
+
+.error {
+  font-size: 0.8125rem;
+  color: #c53030;
+  font-family: var(--font-ui);
+  margin: 0;
+}
