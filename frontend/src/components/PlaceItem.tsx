@@ -1,5 +1,7 @@
-import type { Place } from '../types'
+import type { KeyboardEvent } from 'react'
+import type { Category, Place } from '../types'
 import { StarRating } from './StarRating'
+import { ExpandableChipRow } from './ExpandableChipRow'
 import styles from './PlaceItem.module.css'
 
 const STATUS_COLORS: Record<string, string> = {
@@ -16,11 +18,20 @@ interface Props {
 }
 
 export function PlaceItem({ place, distanceLabel, onClick, selected }: Props) {
+  function handleKeyDown(event: KeyboardEvent) {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault()
+      onClick()
+    }
+  }
+
   return (
-    <button
+    <div
       className={`${styles.item} ${selected ? styles.selected : ''}`}
       onClick={onClick}
-      type="button"
+      onKeyDown={handleKeyDown}
+      role="button"
+      tabIndex={0}
     >
       <span
         className={styles.dot}
@@ -29,14 +40,17 @@ export function PlaceItem({ place, distanceLabel, onClick, selected }: Props) {
       />
       <span className={styles.content}>
         <span className={styles.name}>{place.name}</span>
-        <span className={styles.meta}>
-          {place.categories.map((c) => c.name).join(' · ')}
-        </span>
+        <ExpandableChipRow
+          items={place.categories}
+          visibleCount={2}
+          keyFn={(cat: Category) => cat.id}
+          renderItem={(cat: Category) => <span className={styles.pill}>{cat.name}</span>}
+        />
       </span>
       <span className={styles.right}>
         <StarRating mode="display" value={place.avg_rating} />
         <span className={styles.distance}>{distanceLabel}</span>
       </span>
-    </button>
+    </div>
   )
 }
