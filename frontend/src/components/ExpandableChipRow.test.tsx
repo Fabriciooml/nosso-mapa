@@ -58,6 +58,26 @@ describe('ExpandableChipRow', () => {
     expect(screen.getByText('+2')).toBeInTheDocument()
   })
 
+  it('uses custom expandLabel/collapseLabel when provided', async () => {
+    render(
+      <ExpandableChipRow
+        items={ITEMS}
+        visibleCount={2}
+        keyFn={(item) => item.id}
+        renderItem={(item) => <span>{item.name}</span>}
+        expandLabel="Show more items"
+        collapseLabel="Show less items"
+      />,
+    )
+    const toggle = screen.getByRole('button', { name: 'Show more items' })
+    expect(toggle).toHaveAttribute('aria-expanded', 'false')
+    await userEvent.click(toggle)
+    expect(screen.getByRole('button', { name: 'Show less items' })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    )
+  })
+
   it('toggle click does not bubble to a parent click handler', async () => {
     const onParentClick = vi.fn()
     render(

@@ -6,9 +6,18 @@ interface Props<T> {
   visibleCount: number
   keyFn: (item: T) => string | number
   renderItem: (item: T) => ReactNode
+  expandLabel?: string
+  collapseLabel?: string
 }
 
-export function ExpandableChipRow<T>({ items, visibleCount, keyFn, renderItem }: Props<T>) {
+export function ExpandableChipRow<T>({
+  items,
+  visibleCount,
+  keyFn,
+  renderItem,
+  expandLabel = 'Mostrar mais categorias',
+  collapseLabel = 'Mostrar menos categorias',
+}: Props<T>) {
   const [expanded, setExpanded] = useState(false)
   const hasOverflow = items.length > visibleCount
   const visibleItems = expanded || !hasOverflow ? items : items.slice(0, visibleCount)
@@ -28,7 +37,8 @@ export function ExpandableChipRow<T>({ items, visibleCount, keyFn, renderItem }:
           type="button"
           className={styles.toggle}
           onClick={handleToggle}
-          aria-label={expanded ? 'Mostrar menos categorias' : 'Mostrar mais categorias'}
+          aria-label={expanded ? collapseLabel : expandLabel}
+          aria-expanded={expanded}
         >
           {expanded ? '−' : `+${items.length - visibleCount}`}
         </button>
