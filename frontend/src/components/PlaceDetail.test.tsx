@@ -72,6 +72,46 @@ describe('PlaceDetail', () => {
     expect(screen.getByText('Café')).toBeInTheDocument()
   })
 
+  it('shows +N chip and expands to show all categories when more than 3', async () => {
+    const placeWithManyCategories = {
+      ...PLACE,
+      categories: [
+        { id: 1, name: 'Café' },
+        { id: 2, name: 'Restaurante' },
+        { id: 3, name: 'Museu' },
+        { id: 4, name: 'Cinema' },
+      ],
+    }
+    render(<PlaceDetail place={placeWithManyCategories} onClose={vi.fn()} />, { wrapper })
+    expect(screen.queryByText('Cinema')).not.toBeInTheDocument()
+    expect(screen.getByText('+1')).toBeInTheDocument()
+    await userEvent.click(screen.getByText('+1'))
+    expect(screen.getByText('Cinema')).toBeInTheDocument()
+  })
+
+  it('resets expanded categories when switching to a different place', async () => {
+    const placeWithManyCategories = {
+      ...PLACE,
+      categories: [
+        { id: 1, name: 'Café' },
+        { id: 2, name: 'Restaurante' },
+        { id: 3, name: 'Museu' },
+        { id: 4, name: 'Cinema' },
+      ],
+    }
+    const { rerender } = render(
+      <PlaceDetail place={placeWithManyCategories} onClose={vi.fn()} />,
+      { wrapper },
+    )
+    await userEvent.click(screen.getByText('+1'))
+    expect(screen.getByText('Cinema')).toBeInTheDocument()
+
+    const otherPlace = { ...placeWithManyCategories, id: 2, name: 'Outro lugar' }
+    rerender(<PlaceDetail place={otherPlace} onClose={vi.fn()} />)
+    expect(screen.queryByText('Cinema')).not.toBeInTheDocument()
+    expect(screen.getByText('+1')).toBeInTheDocument()
+  })
+
   it('renders all 3 status buttons', () => {
     render(<PlaceDetail place={PLACE} onClose={vi.fn()} />, { wrapper })
     expect(screen.getByText('📍 A ir')).toBeInTheDocument()

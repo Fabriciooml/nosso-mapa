@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import type { Place, PlaceStatus } from '../types'
+import type { Place, PlaceStatus, Category } from '../types'
 import { StarRating } from './StarRating'
 import { useUpdateStatus, useAddReview, useDeletePlace } from '../hooks/usePlaces'
 import { useIdentity } from '../hooks/useIdentity'
 import { EditPlaceModal } from './EditPlaceModal'
+import { ExpandableChipRow } from './ExpandableChipRow'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import styles from './PlaceDetail.module.css'
@@ -49,9 +50,15 @@ export function PlaceDetail({ place, onClose }: Props) {
     <div className={styles.panel}>
       <button className={styles.close} onClick={onClose} aria-label="Fechar">✕</button>
       <h2 className={styles.name}>{place.alias ?? place.name}</h2>
-      <p className={styles.categories}>
-        {place.categories.map((c) => c.name).join(' · ')}
-      </p>
+      <div className={styles.categories}>
+        <ExpandableChipRow
+          key={place.id}
+          items={place.categories}
+          visibleCount={3}
+          keyFn={(cat: Category) => cat.id}
+          renderItem={(cat: Category) => <span className={styles.pill}>{cat.name}</span>}
+        />
+      </div>
 
       {place.description && (
         <div className={styles.description} data-testid="description">
