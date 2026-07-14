@@ -19,6 +19,7 @@ interface Props {
 
 export function PlaceItem({ place, distanceLabel, onClick, selected }: Props) {
   function handleKeyDown(event: KeyboardEvent) {
+    if (event.target !== event.currentTarget) return
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault()
       onClick()
