@@ -1,4 +1,5 @@
 import type { PlaceStatus, Category } from '../types'
+import { ExpandableChipRow } from './ExpandableChipRow'
 import styles from './FilterBar.module.css'
 
 interface Props {
@@ -66,19 +67,23 @@ export function FilterBar({
       </div>
       {categories.length > 0 && (
         <div className={styles.group}>
-          {categories.map((cat) => {
-            const active = categoryFilter.includes(cat.id)
-            return (
-              <button
-                key={cat.id}
-                className={`${styles.chip} ${active ? styles.catActive : ''}`}
-                onClick={() => onCategoryToggle(cat.id)}
-                aria-pressed={active}
-              >
-                {cat.name}
-              </button>
-            )
-          })}
+          <ExpandableChipRow
+            items={categories}
+            visibleCount={3}
+            keyFn={(cat) => cat.id}
+            renderItem={(cat) => {
+              const active = categoryFilter.includes(cat.id)
+              return (
+                <button
+                  className={`${styles.chip} ${active ? styles.catActive : ''}`}
+                  onClick={() => onCategoryToggle(cat.id)}
+                  aria-pressed={active}
+                >
+                  {cat.name}
+                </button>
+              )
+            }}
+          />
         </div>
       )}
     </div>
