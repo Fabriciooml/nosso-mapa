@@ -35,6 +35,12 @@ export function FilterBar({
   onScreenOnlyToggle,
   boundsReady = false,
 }: Props) {
+  const sortedCategories = [...categories].sort((a, b) => {
+    const aActive = categoryFilter.includes(a.id) ? 0 : 1
+    const bActive = categoryFilter.includes(b.id) ? 0 : 1
+    return aActive - bActive
+  })
+
   return (
     <div className={styles.bar}>
       {onScreenOnlyToggle && (
@@ -68,7 +74,7 @@ export function FilterBar({
       {categories.length > 0 && (
         <div className={styles.group}>
           <ExpandableChipRow
-            items={categories}
+            items={sortedCategories}
             visibleCount={3}
             keyFn={(cat) => cat.id}
             renderItem={(cat) => {
