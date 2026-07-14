@@ -2,7 +2,7 @@ import type { Place, PlaceStatus, MapBounds } from '../types'
 import { isInBounds } from './bounds'
 import { normalize } from './search'
 
-interface FilterOptions {
+export interface FilterOptions {
   statusFilter: PlaceStatus[]
   categoryFilter: number[]
   query: string
