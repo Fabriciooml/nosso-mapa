@@ -58,6 +58,53 @@ describe('FilterBar', () => {
     render(<FilterBar {...defaultProps} categories={[]} />)
     expect(screen.queryByText('Café')).not.toBeInTheDocument()
   })
+
+  it('truncates category chips and expands to show all when more than 3', async () => {
+    const manyCategories = [
+      { id: 1, name: 'Café' },
+      { id: 2, name: 'Museu' },
+      { id: 3, name: 'Cinema' },
+      { id: 4, name: 'Restaurante' },
+    ]
+    render(<FilterBar {...defaultProps} categories={manyCategories} />)
+    expect(screen.queryByText('Restaurante')).not.toBeInTheDocument()
+    expect(screen.getByText('+1')).toBeInTheDocument()
+    await userEvent.click(screen.getByText('+1'))
+    expect(screen.getByText('Restaurante')).toBeInTheDocument()
+  })
+
+  it('category chip inside the expandable row still calls onCategoryToggle when clicked', async () => {
+    const onCategoryToggle = vi.fn()
+    const manyCategories = [
+      { id: 1, name: 'Café' },
+      { id: 2, name: 'Museu' },
+      { id: 3, name: 'Cinema' },
+      { id: 4, name: 'Restaurante' },
+    ]
+    render(
+      <FilterBar {...defaultProps} categories={manyCategories} onCategoryToggle={onCategoryToggle} />,
+    )
+    await userEvent.click(screen.getByText('Café'))
+    expect(onCategoryToggle).toHaveBeenCalledWith(1)
+  })
+
+  it('keeps an active category visible even when it would otherwise be collapsed', () => {
+    const manyCategories = [
+      { id: 1, name: 'Café' },
+      { id: 2, name: 'Museu' },
+      { id: 3, name: 'Cinema' },
+      { id: 4, name: 'Restaurante' },
+    ]
+    render(<FilterBar {...defaultProps} categories={manyCategories} categoryFilter={[4]} />)
+    // The active category (normally hidden behind +N) is sorted into the visible slice.
+    expect(screen.getByText('Restaurante')).toBeInTheDocument()
+    expect(screen.getByText('Restaurante').closest('button')).toHaveAttribute('aria-pressed', 'true')
+    // Two of the previously-first-3 stay visible; one gets pushed into the collapsed +1.
+    expect(screen.getByText('Café')).toBeInTheDocument()
+    expect(screen.getByText('Museu')).toBeInTheDocument()
+    expect(screen.queryByText('Cinema')).not.toBeInTheDocument()
+    expect(screen.getByText('+1')).toBeInTheDocument()
+  })
 })
 
 describe('FilterBar — Na tela toggle', () => {

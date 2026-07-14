@@ -1,4 +1,5 @@
 import type { PlaceStatus, Category } from '../types'
+import { ExpandableChipRow } from './ExpandableChipRow'
 import styles from './FilterBar.module.css'
 
 interface Props {
@@ -34,6 +35,14 @@ export function FilterBar({
   onScreenOnlyToggle,
   boundsReady = false,
 }: Props) {
+  // Active filters sort to the front so they stay visible when the row is collapsed;
+  // toggling a chip may reorder it (intentional, not a bug).
+  const sortedCategories = [...categories].sort((a, b) => {
+    const aActive = categoryFilter.includes(a.id) ? 0 : 1
+    const bActive = categoryFilter.includes(b.id) ? 0 : 1
+    return aActive - bActive
+  })
+
   return (
     <div className={styles.bar}>
       {onScreenOnlyToggle && (
@@ -66,19 +75,23 @@ export function FilterBar({
       </div>
       {categories.length > 0 && (
         <div className={styles.group}>
-          {categories.map((cat) => {
-            const active = categoryFilter.includes(cat.id)
-            return (
-              <button
-                key={cat.id}
-                className={`${styles.chip} ${active ? styles.catActive : ''}`}
-                onClick={() => onCategoryToggle(cat.id)}
-                aria-pressed={active}
-              >
-                {cat.name}
-              </button>
-            )
-          })}
+          <ExpandableChipRow
+            items={sortedCategories}
+            visibleCount={3}
+            keyFn={(cat) => cat.id}
+            renderItem={(cat) => {
+              const active = categoryFilter.includes(cat.id)
+              return (
+                <button
+                  className={`${styles.chip} ${active ? styles.catActive : ''}`}
+                  onClick={() => onCategoryToggle(cat.id)}
+                  aria-pressed={active}
+                >
+                  {cat.name}
+                </button>
+              )
+            }}
+          />
         </div>
       )}
     </div>
