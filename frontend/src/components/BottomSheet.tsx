@@ -2,8 +2,9 @@ import { useState } from 'react'
 import type { Place, PlaceStatus, Category, MapBounds } from '../types'
 import { PlaceItem } from './PlaceItem'
 import { FilterBar } from './FilterBar'
+import { SearchBar } from './SearchBar'
+import { filterPlaces } from '../utils/filterPlaces'
 import { sortPlacesByDistance, distanceDeg, formatDistance } from '../utils/distance'
-import { isInBounds } from '../utils/bounds'
 import styles from './BottomSheet.module.css'
 
 interface Props {
@@ -20,6 +21,8 @@ interface Props {
   onScreenOnly: boolean
   mapBounds: MapBounds | null
   onScreenOnlyToggle: () => void
+  searchQuery: string
+  onSearchChange: (value: string) => void
 }
 
 export function BottomSheet({
@@ -36,23 +39,29 @@ export function BottomSheet({
   onScreenOnly,
   mapBounds,
   onScreenOnlyToggle,
+  searchQuery,
+  onSearchChange,
 }: Props) {
   const [expanded, setExpanded] = useState(false)
 
-  const statusCatFiltered = places.filter((p) => {
-    const statusOk = statusFilter.length === 0 || statusFilter.includes(p.status)
-    const catOk =
-      categoryFilter.length === 0 ||
-      p.categories.some((c) => categoryFilter.includes(c.id))
-    return statusOk && catOk
+  const filtered = filterPlaces(places, {
+    statusFilter,
+    categoryFilter,
+    query: searchQuery,
+    onScreenOnly,
+    mapBounds,
   })
 
-  const boundsFiltered =
-    onScreenOnly && mapBounds
-      ? statusCatFiltered.filter((p) => isInBounds(p, mapBounds))
-      : statusCatFiltered
+  const sorted = sortPlacesByDistance(filtered, centerLat, centerLng)
 
-  const sorted = sortPlacesByDistance(boundsFiltered, centerLat, centerLng)
+  const emptyMessage =
+    sorted.length > 0
+      ? null
+      : searchQuery.trim() !== ''
+        ? 'Nenhum lugar encontrado'
+        : onScreenOnly
+          ? 'Nenhum lugar nesta área'
+          : null
 
   return (
     <div className={`${styles.sheet} ${expanded ? styles.expanded : ''}`}>
@@ -63,6 +72,9 @@ export function BottomSheet({
       >
         <span className={styles.pill} />
       </button>
+      <div className={styles.search}>
+        <SearchBar value={searchQuery} onChange={onSearchChange} />
+      </div>
       <div className={styles.filters}>
         <FilterBar
           statusFilter={statusFilter}
@@ -76,8 +88,8 @@ export function BottomSheet({
         />
       </div>
       <div className={styles.list}>
-        {sorted.length === 0 && onScreenOnly ? (
-          <p className={styles.emptyArea}>Nenhum lugar nesta área</p>
+        {emptyMessage ? (
+          <p className={styles.emptyArea}>{emptyMessage}</p>
         ) : (
           sorted.map((place) => (
             <PlaceItem

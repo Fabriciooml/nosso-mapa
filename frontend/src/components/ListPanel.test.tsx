@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, it, expect, vi } from 'vitest'
@@ -48,6 +49,8 @@ const defaultProps = {
   onScreenOnly: false,
   mapBounds: null as MapBounds | null,
   onScreenOnlyToggle: vi.fn(),
+  searchQuery: '',
+  onSearchChange: vi.fn(),
 }
 
 describe('ListPanel', () => {
@@ -106,5 +109,26 @@ describe('ListPanel', () => {
     render(<ListPanel {...defaultProps} onScreenOnly={true} mapBounds={bounds} />)
     expect(screen.getByText('Nenhum lugar nesta área')).toBeInTheDocument()
     expect(screen.queryByText('Lugar Perto')).not.toBeInTheDocument()
+  })
+
+  it('filters places by search query', async () => {
+    function Wrapper() {
+      const [query, setQuery] = useState('')
+      return <ListPanel {...defaultProps} searchQuery={query} onSearchChange={setQuery} />
+    }
+    render(<Wrapper />)
+    await userEvent.type(screen.getByPlaceholderText('Buscar lugar...'), 'Perto')
+    expect(screen.getByText('Lugar Perto')).toBeInTheDocument()
+    expect(screen.queryByText('Lugar Longe')).not.toBeInTheDocument()
+  })
+
+  it('shows "Nenhum lugar encontrado" when search matches nothing', async () => {
+    function Wrapper() {
+      const [query, setQuery] = useState('')
+      return <ListPanel {...defaultProps} searchQuery={query} onSearchChange={setQuery} />
+    }
+    render(<Wrapper />)
+    await userEvent.type(screen.getByPlaceholderText('Buscar lugar...'), 'zzz')
+    expect(screen.getByText('Nenhum lugar encontrado')).toBeInTheDocument()
   })
 })

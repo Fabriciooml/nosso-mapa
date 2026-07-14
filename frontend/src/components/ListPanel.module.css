@@ -22,6 +22,10 @@
   letter-spacing: 0.02em;
 }
 
+.search {
+  padding: 0.5rem 0.75rem 0;
+}
+
 .filters {
   padding: 0.5rem 0.75rem;
   border-bottom: 1px solid var(--border);

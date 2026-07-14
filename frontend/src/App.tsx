@@ -29,6 +29,7 @@ export default function App() {
   const [showAdd, setShowAdd] = useState(false)
   const [statusFilter, setStatusFilter] = useState<PlaceStatus[]>([])
   const [categoryFilter, setCategoryFilter] = useState<number[]>([])
+  const [searchQuery, setSearchQuery] = useState('')
 
   const handleCameraChanged = useCallback((lat: number, lng: number, bounds: MapBounds) => {
     setCenterLat(lat)
@@ -74,6 +75,8 @@ export default function App() {
               onScreenOnly={onScreenOnly}
               mapBounds={mapBounds}
               onScreenOnlyToggle={() => setOnScreenOnly((v) => !v)}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
             />
           )}
           <div className={styles.mapArea}>
@@ -117,6 +120,8 @@ export default function App() {
               onScreenOnly={onScreenOnly}
               mapBounds={mapBounds}
               onScreenOnlyToggle={() => setOnScreenOnly((v) => !v)}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
             />
           )}
           <button
