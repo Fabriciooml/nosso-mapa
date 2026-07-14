@@ -35,6 +35,8 @@ export function FilterBar({
   onScreenOnlyToggle,
   boundsReady = false,
 }: Props) {
+  // Active filters sort to the front so they stay visible when the row is collapsed;
+  // toggling a chip may reorder it (intentional, not a bug).
   const sortedCategories = [...categories].sort((a, b) => {
     const aActive = categoryFilter.includes(a.id) ? 0 : 1
     const bActive = categoryFilter.includes(b.id) ? 0 : 1
