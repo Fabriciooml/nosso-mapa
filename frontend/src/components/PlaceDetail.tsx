@@ -66,6 +66,33 @@ export function PlaceDetail({ place, onClose }: Props) {
         </div>
       )}
 
+      {(place.website || (place.opening_hours && place.opening_hours.length > 0) || place.price_level != null) && (
+        <div className={styles.googleInfo} data-testid="google-info">
+          {place.website && (
+            <a
+              className={styles.websiteLink}
+              href={place.website}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              🔗 Website
+            </a>
+          )}
+          {place.price_level != null && (
+            <span className={styles.priceLevel}>
+              {place.price_level === 0 ? 'Grátis' : '$'.repeat(place.price_level)}
+            </span>
+          )}
+          {place.opening_hours && place.opening_hours.length > 0 && (
+            <ul className={styles.hoursList}>
+              {place.opening_hours.map((line) => (
+                <li key={line}>{line}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+
       <div className={styles.rating}>
         <StarRating mode="display" value={place.avg_rating} />
         {place.avg_rating !== null && (

@@ -112,6 +112,41 @@ describe('PlaceDetail', () => {
     expect(screen.getByText('+1')).toBeInTheDocument()
   })
 
+  it('does not render google info section when fields are absent', () => {
+    render(<PlaceDetail place={PLACE} onClose={vi.fn()} />, { wrapper })
+    expect(screen.queryByTestId('google-info')).not.toBeInTheDocument()
+  })
+
+  it('renders website link when set', () => {
+    const place = { ...PLACE, website: 'https://example.com' }
+    render(<PlaceDetail place={place} onClose={vi.fn()} />, { wrapper })
+    const link = screen.getByText('🔗 Website')
+    expect(link).toHaveAttribute('href', 'https://example.com')
+    expect(link).toHaveAttribute('target', '_blank')
+  })
+
+  it('renders price level as $ symbols', () => {
+    const place = { ...PLACE, price_level: 3 }
+    render(<PlaceDetail place={place} onClose={vi.fn()} />, { wrapper })
+    expect(screen.getByText('$$$')).toBeInTheDocument()
+  })
+
+  it('renders Grátis when price_level is 0', () => {
+    const place = { ...PLACE, price_level: 0 }
+    render(<PlaceDetail place={place} onClose={vi.fn()} />, { wrapper })
+    expect(screen.getByText('Grátis')).toBeInTheDocument()
+  })
+
+  it('renders opening hours as a list', () => {
+    const place = {
+      ...PLACE,
+      opening_hours: ['segunda: 09:00–18:00', 'terça: 09:00–18:00'],
+    }
+    render(<PlaceDetail place={place} onClose={vi.fn()} />, { wrapper })
+    expect(screen.getByText('segunda: 09:00–18:00')).toBeInTheDocument()
+    expect(screen.getByText('terça: 09:00–18:00')).toBeInTheDocument()
+  })
+
   it('renders all 3 status buttons', () => {
     render(<PlaceDetail place={PLACE} onClose={vi.fn()} />, { wrapper })
     expect(screen.getByText('📍 A ir')).toBeInTheDocument()
