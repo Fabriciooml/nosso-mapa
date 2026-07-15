@@ -45,6 +45,26 @@ def test_create_place_with_categories(client):
     assert body["categories"][0]["name"] == "Café"
 
 
+def test_create_place_with_google_fields(client):
+    payload = {
+        **PLACE_PAYLOAD,
+        "website": "https://example.com",
+        "opening_hours": ["segunda-feira: 09:00–18:00", "terça-feira: 09:00–18:00"],
+        "price_level": 2,
+    }
+    body = client.post("/api/places", json=payload).json()
+    assert body["website"] == "https://example.com"
+    assert body["opening_hours"] == ["segunda-feira: 09:00–18:00", "terça-feira: 09:00–18:00"]
+    assert body["price_level"] == 2
+
+
+def test_create_place_google_fields_default_null(client):
+    body = client.post("/api/places", json=PLACE_PAYLOAD).json()
+    assert body["website"] is None
+    assert body["opening_hours"] is None
+    assert body["price_level"] is None
+
+
 def test_create_place_appears_in_list(client):
     client.post("/api/places", json=PLACE_PAYLOAD)
     places = client.get("/api/places").json()
@@ -255,6 +275,23 @@ def test_create_restore_updates_name_and_coords(client):
     body = response.json()
     assert body["name"] == "Restaurante Novo Nome"
     assert body["lat"] == 38.72
+
+
+def test_create_restore_updates_google_fields(client):
+    place_id = client.post("/api/places", json=PLACE_PAYLOAD).json()["id"]
+    client.delete(f"/api/places/{place_id}")
+    new_payload = {
+        **PLACE_PAYLOAD,
+        "website": "https://restored.example.com",
+        "opening_hours": ["segunda-feira: 09:00–18:00"],
+        "price_level": 3,
+    }
+    response = client.post("/api/places", json=new_payload)
+    assert response.status_code == 200
+    body = response.json()
+    assert body["website"] == "https://restored.example.com"
+    assert body["opening_hours"] == ["segunda-feira: 09:00–18:00"]
+    assert body["price_level"] == 3
 
 
 def test_create_restore_appears_in_list(client):

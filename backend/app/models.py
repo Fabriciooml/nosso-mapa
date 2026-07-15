@@ -17,6 +17,9 @@ class PlaceCreate(BaseModel):
     lat: float
     lng: float
     category_ids: list[int]
+    website: Optional[str] = None
+    opening_hours: Optional[list[str]] = None
+    price_level: Optional[int] = None
 
 
 class PlaceStatusUpdate(BaseModel):
@@ -60,3 +63,6 @@ class PlaceOut(BaseModel):
     description: Optional[str]
     categories: list[CategoryOut]
     created_at: str
+    website: Optional[str]
+    opening_hours: Optional[list[str]]
+    price_level: Optional[int]
