@@ -5,8 +5,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import React from 'react'
 import { AddPlaceModal } from './AddPlaceModal'
 
-const { MockAutocomplete, getLastInstance } = vi.hoisted(() => {
+const { MockAutocomplete, getLastInstance, getConstructionCount, resetConstructionCount } = vi.hoisted(() => {
   let lastInstance: MockAutocompleteType | undefined
+  let constructionCount = 0
 
   class MockAutocompleteType {
     fields: string[]
@@ -16,6 +17,7 @@ const { MockAutocomplete, getLastInstance } = vi.hoisted(() => {
     constructor(_el: HTMLInputElement, opts: { fields: string[] }) {
       this.fields = opts.fields
       lastInstance = this
+      constructionCount += 1
     }
 
     addListener(event: string, cb: () => void) {
@@ -34,11 +36,19 @@ const { MockAutocomplete, getLastInstance } = vi.hoisted(() => {
   return {
     MockAutocomplete: MockAutocompleteType,
     getLastInstance: () => lastInstance,
+    getConstructionCount: () => constructionCount,
+    resetConstructionCount: () => {
+      constructionCount = 0
+    },
   }
 })
 
+const { placesLibMock } = vi.hoisted(() => ({
+  placesLibMock: { Autocomplete: MockAutocomplete },
+}))
+
 vi.mock('@vis.gl/react-google-maps', () => ({
-  useMapsLibrary: () => ({ Autocomplete: MockAutocomplete }),
+  useMapsLibrary: () => placesLibMock,
 }))
 
 const createPlaceMock = {
@@ -52,8 +62,14 @@ vi.mock('../hooks/usePlaces', () => ({
   useCreatePlace: () => createPlaceMock,
 }))
 
+const { useCategoriesMock } = vi.hoisted(() => ({
+  useCategoriesMock: vi.fn(() => ({
+    data: [{ id: 1, name: 'Café' }, { id: 2, name: 'Museu' }],
+  })),
+}))
+
 vi.mock('../hooks/useCategories', () => ({
-  useCategories: () => ({ data: [{ id: 1, name: 'Café' }, { id: 2, name: 'Museu' }] }),
+  useCategories: useCategoriesMock,
   useCreateCategory: () => ({ mutate: vi.fn() }),
 }))
 
@@ -64,8 +80,12 @@ function wrapper({ children }: { children: React.ReactNode }) {
 
 beforeEach(() => {
   vi.clearAllMocks()
+  resetConstructionCount()
   createPlaceMock.isError = false
   createPlaceMock.error = null
+  useCategoriesMock.mockReturnValue({
+    data: [{ id: 1, name: 'Café' }, { id: 2, name: 'Museu' }],
+  })
 })
 
 describe('AddPlaceModal', () => {
@@ -174,5 +194,19 @@ describe('AddPlaceModal', () => {
       }),
       expect.any(Object),
     )
+  })
+
+  it('does not recreate the Autocomplete instance when categories reference changes', () => {
+    const { rerender } = render(<AddPlaceModal onClose={vi.fn()} />, { wrapper })
+    expect(getConstructionCount()).toBe(1)
+
+    // Simulate a categories refetch/invalidation returning a new array reference
+    // (e.g. after adding a category inline via handleAddCategory).
+    useCategoriesMock.mockReturnValue({
+      data: [{ id: 1, name: 'Café' }, { id: 2, name: 'Museu' }, { id: 3, name: 'Nova' }],
+    })
+    rerender(<AddPlaceModal onClose={vi.fn()} />)
+
+    expect(getConstructionCount()).toBe(1)
   })
 })

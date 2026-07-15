@@ -36,6 +36,11 @@ export function AddPlaceModal({ onClose }: Props) {
     createPlace.error instanceof Error &&
     createPlace.error.message.startsWith('409')
 
+  const categoriesRef = useRef(categories)
+  useEffect(() => {
+    categoriesRef.current = categories
+  }, [categories])
+
   useEffect(() => {
     if (!placesLib || !inputRef.current) return
     const autocomplete = new placesLib.Autocomplete(inputRef.current, {
@@ -53,12 +58,12 @@ export function AddPlaceModal({ onClose }: Props) {
         opening_hours: place.opening_hours?.weekday_text ?? null,
         price_level: place.price_level ?? null,
       })
-      const suggested = suggestCategoryIds(place.types, categories)
+      const suggested = suggestCategoryIds(place.types, categoriesRef.current)
       if (suggested.length > 0) {
         setSelectedCatIds((prev) => [...prev, ...suggested.filter((id) => !prev.includes(id))])
       }
     })
-  }, [placesLib, categories])
+  }, [placesLib])
 
   function toggleCategory(id: number) {
     setSelectedCatIds((prev) =>
