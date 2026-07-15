@@ -10,6 +10,8 @@ import { ListPanel } from './components/ListPanel'
 import { BottomSheet } from './components/BottomSheet'
 import { PlaceDetail } from './components/PlaceDetail'
 import { AddPlaceModal } from './components/AddPlaceModal'
+import { filterPlaces } from './utils/filterPlaces'
+import { visiblePlaces } from './utils/visiblePlaces'
 import type { PlaceStatus, MapBounds } from './types'
 import styles from './App.module.css'
 
@@ -50,6 +52,14 @@ export default function App() {
   }
 
   const selectedPlace = places.find((p) => p.id === selectedId) ?? null
+  const filteredForMap = filterPlaces(places, {
+    statusFilter,
+    categoryFilter,
+    query: searchQuery,
+    onScreenOnly: false,
+    mapBounds: null,
+  })
+  const markerPlaces = visiblePlaces(filteredForMap, selectedPlace)
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string
 
   return (
@@ -81,7 +91,7 @@ export default function App() {
           )}
           <div className={styles.mapArea}>
             <MapView
-              places={places}
+              places={markerPlaces}
               selectedId={selectedId}
               onMarkerClick={setSelectedId}
               onCameraChanged={handleCameraChanged}
@@ -94,7 +104,7 @@ export default function App() {
         {/* Mobile layout */}
         <div className={styles.mobile}>
           <MapView
-            places={places}
+            places={markerPlaces}
             selectedId={selectedId}
             onMarkerClick={setSelectedId}
             onCameraChanged={handleCameraChanged}
