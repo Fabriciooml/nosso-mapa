@@ -1,8 +1,10 @@
 import { useState, useRef, useEffect } from 'react'
+import { flushSync } from 'react-dom'
 import { useMapsLibrary } from '@vis.gl/react-google-maps'
 import type { Category } from '../types'
 import { useCreatePlace } from '../hooks/usePlaces'
 import { useCategories, useCreateCategory } from '../hooks/useCategories'
+import { suggestCategoryIds } from '../utils/suggestCategoryIds'
 import styles from './AddPlaceModal.module.css'
 
 interface SelectedPlace {
@@ -10,6 +12,9 @@ interface SelectedPlace {
   google_place_id: string | null
   lat: number
   lng: number
+  website: string | null
+  opening_hours: string[] | null
+  price_level: number | null
 }
 
 interface Props {
@@ -35,19 +40,28 @@ export function AddPlaceModal({ onClose }: Props) {
   useEffect(() => {
     if (!placesLib || !inputRef.current) return
     const autocomplete = new placesLib.Autocomplete(inputRef.current, {
-      fields: ['place_id', 'name', 'geometry'],
+      fields: ['place_id', 'name', 'geometry', 'website', 'opening_hours', 'price_level', 'types'],
     })
     autocomplete.addListener('place_changed', () => {
       const place = autocomplete.getPlace()
       if (!place.geometry?.location) return
-      setSelectedPlace({
-        name: place.name ?? '',
-        google_place_id: place.place_id ?? null,
-        lat: place.geometry.location.lat(),
-        lng: place.geometry.location.lng(),
+      flushSync(() => {
+        setSelectedPlace({
+          name: place.name ?? '',
+          google_place_id: place.place_id ?? null,
+          lat: place.geometry.location.lat(),
+          lng: place.geometry.location.lng(),
+          website: place.website ?? null,
+          opening_hours: place.opening_hours?.weekday_text ?? null,
+          price_level: place.price_level ?? null,
+        })
+        const suggested = suggestCategoryIds(place.types, categories)
+        if (suggested.length > 0) {
+          setSelectedCatIds((prev) => [...prev, ...suggested.filter((id) => !prev.includes(id))])
+        }
       })
     })
-  }, [placesLib])
+  }, [placesLib, categories])
 
   function toggleCategory(id: number) {
     setSelectedCatIds((prev) =>

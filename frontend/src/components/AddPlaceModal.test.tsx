@@ -5,8 +5,40 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import React from 'react'
 import { AddPlaceModal } from './AddPlaceModal'
 
+const { MockAutocomplete, getLastInstance } = vi.hoisted(() => {
+  let lastInstance: MockAutocompleteType | undefined
+
+  class MockAutocompleteType {
+    fields: string[]
+    place: Record<string, unknown> = {}
+    private listeners: Record<string, () => void> = {}
+
+    constructor(_el: HTMLInputElement, opts: { fields: string[] }) {
+      this.fields = opts.fields
+      lastInstance = this
+    }
+
+    addListener(event: string, cb: () => void) {
+      this.listeners[event] = cb
+    }
+
+    getPlace() {
+      return this.place
+    }
+
+    trigger(event: string) {
+      this.listeners[event]?.()
+    }
+  }
+
+  return {
+    MockAutocomplete: MockAutocompleteType,
+    getLastInstance: () => lastInstance,
+  }
+})
+
 vi.mock('@vis.gl/react-google-maps', () => ({
-  useMapsLibrary: () => null,
+  useMapsLibrary: () => ({ Autocomplete: MockAutocomplete }),
 }))
 
 const createPlaceMock = {
@@ -90,5 +122,53 @@ describe('AddPlaceModal', () => {
   it('does not show error when no error', () => {
     render(<AddPlaceModal onClose={vi.fn()} />, { wrapper })
     expect(screen.queryByText('Lugar já está na lista')).not.toBeInTheDocument()
+  })
+
+  it('requests extended place fields from Autocomplete', () => {
+    render(<AddPlaceModal onClose={vi.fn()} />, { wrapper })
+    expect(getLastInstance()?.fields).toEqual([
+      'place_id', 'name', 'geometry', 'website', 'opening_hours', 'price_level', 'types',
+    ])
+  })
+
+  it('auto-checks matching category chip when a place is selected', () => {
+    render(<AddPlaceModal onClose={vi.fn()} />, { wrapper })
+    const instance = getLastInstance()!
+    instance.place = {
+      place_id: 'abc',
+      name: 'Café Central',
+      geometry: { location: { lat: () => 1, lng: () => 2 } },
+      website: 'https://cafecentral.pt',
+      opening_hours: { weekday_text: ['segunda: 09:00–18:00'] },
+      price_level: 1,
+      types: ['cafe'],
+    }
+    instance.trigger('place_changed')
+    const chip = screen.getByText('Café').closest('button')!
+    expect(chip).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  it('includes website, opening_hours, price_level in the save payload', async () => {
+    render(<AddPlaceModal onClose={vi.fn()} />, { wrapper })
+    const instance = getLastInstance()!
+    instance.place = {
+      place_id: 'abc',
+      name: 'Café Central',
+      geometry: { location: { lat: () => 1, lng: () => 2 } },
+      website: 'https://cafecentral.pt',
+      opening_hours: { weekday_text: ['segunda: 09:00–18:00'] },
+      price_level: 1,
+      types: ['cafe'],
+    }
+    instance.trigger('place_changed')
+    await userEvent.click(screen.getByText('Salvar'))
+    expect(createPlaceMock.mutate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        website: 'https://cafecentral.pt',
+        opening_hours: ['segunda: 09:00–18:00'],
+        price_level: 1,
+      }),
+      expect.any(Object),
+    )
   })
 })
