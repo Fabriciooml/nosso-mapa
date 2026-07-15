@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
@@ -143,7 +143,9 @@ describe('AddPlaceModal', () => {
       price_level: 1,
       types: ['cafe'],
     }
-    instance.trigger('place_changed')
+    act(() => {
+      instance.trigger('place_changed')
+    })
     const chip = screen.getByText('Café').closest('button')!
     expect(chip).toHaveAttribute('aria-pressed', 'true')
   })
@@ -160,7 +162,9 @@ describe('AddPlaceModal', () => {
       price_level: 1,
       types: ['cafe'],
     }
-    instance.trigger('place_changed')
+    act(() => {
+      instance.trigger('place_changed')
+    })
     await userEvent.click(screen.getByText('Salvar'))
     expect(createPlaceMock.mutate).toHaveBeenCalledWith(
       expect.objectContaining({

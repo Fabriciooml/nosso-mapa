@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from 'react'
-import { flushSync } from 'react-dom'
 import { useMapsLibrary } from '@vis.gl/react-google-maps'
 import type { Category } from '../types'
 import { useCreatePlace } from '../hooks/usePlaces'
@@ -45,21 +44,19 @@ export function AddPlaceModal({ onClose }: Props) {
     autocomplete.addListener('place_changed', () => {
       const place = autocomplete.getPlace()
       if (!place.geometry?.location) return
-      flushSync(() => {
-        setSelectedPlace({
-          name: place.name ?? '',
-          google_place_id: place.place_id ?? null,
-          lat: place.geometry.location.lat(),
-          lng: place.geometry.location.lng(),
-          website: place.website ?? null,
-          opening_hours: place.opening_hours?.weekday_text ?? null,
-          price_level: place.price_level ?? null,
-        })
-        const suggested = suggestCategoryIds(place.types, categories)
-        if (suggested.length > 0) {
-          setSelectedCatIds((prev) => [...prev, ...suggested.filter((id) => !prev.includes(id))])
-        }
+      setSelectedPlace({
+        name: place.name ?? '',
+        google_place_id: place.place_id ?? null,
+        lat: place.geometry.location.lat(),
+        lng: place.geometry.location.lng(),
+        website: place.website ?? null,
+        opening_hours: place.opening_hours?.weekday_text ?? null,
+        price_level: place.price_level ?? null,
       })
+      const suggested = suggestCategoryIds(place.types, categories)
+      if (suggested.length > 0) {
+        setSelectedCatIds((prev) => [...prev, ...suggested.filter((id) => !prev.includes(id))])
+      }
     })
   }, [placesLib, categories])
 
