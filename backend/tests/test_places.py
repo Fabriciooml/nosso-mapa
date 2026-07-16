@@ -58,6 +58,26 @@ def test_create_place_with_google_fields(client):
     assert body["price_level"] == 2
 
 
+def test_create_place_price_level_too_high_rejected(client):
+    payload = {**PLACE_PAYLOAD, "price_level": 5}
+    response = client.post("/api/places", json=payload)
+    assert response.status_code == 422
+
+
+def test_create_place_price_level_negative_rejected(client):
+    payload = {**PLACE_PAYLOAD, "price_level": -1}
+    response = client.post("/api/places", json=payload)
+    assert response.status_code == 422
+
+
+@pytest.mark.parametrize("price_level", [0, 1, 2, 3, 4])
+def test_create_place_price_level_valid_range_accepted(client, price_level):
+    payload = {**PLACE_PAYLOAD, "price_level": price_level}
+    response = client.post("/api/places", json=payload)
+    assert response.status_code == 201
+    assert response.json()["price_level"] == price_level
+
+
 def test_create_place_google_fields_default_null(client):
     body = client.post("/api/places", json=PLACE_PAYLOAD).json()
     assert body["website"] is None

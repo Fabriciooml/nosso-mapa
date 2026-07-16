@@ -28,6 +28,7 @@ export function PlaceDetail({ place, onClose }: Props) {
   const [showReview, setShowReview] = useState(false)
   const [showEdit, setShowEdit] = useState(false)
   const [rating, setRating] = useState(3.0)
+  const isSafeWebsite = place.website != null && /^https?:\/\//i.test(place.website)
 
   function handleStatusChange(status: PlaceStatus) {
     updateStatus.mutate({ id: place.id, status })
@@ -68,10 +69,10 @@ export function PlaceDetail({ place, onClose }: Props) {
 
       {(place.website || (place.opening_hours && place.opening_hours.length > 0) || place.price_level != null) && (
         <div className={styles.googleInfo} data-testid="google-info">
-          {place.website && (
+          {isSafeWebsite && (
             <a
               className={styles.websiteLink}
-              href={place.website}
+              href={place.website ?? undefined}
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -80,7 +81,9 @@ export function PlaceDetail({ place, onClose }: Props) {
           )}
           {place.price_level != null && (
             <span className={styles.priceLevel}>
-              {place.price_level === 0 ? 'Grátis' : '$'.repeat(place.price_level)}
+              {place.price_level === 0
+                ? 'Grátis'
+                : '$'.repeat(Math.min(Math.max(place.price_level, 1), 4))}
             </span>
           )}
           {place.opening_hours && place.opening_hours.length > 0 && (

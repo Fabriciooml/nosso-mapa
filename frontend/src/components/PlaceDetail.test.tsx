@@ -131,6 +131,19 @@ describe('PlaceDetail', () => {
     expect(screen.getByText('$$$')).toBeInTheDocument()
   })
 
+  it('clamps out-of-range price_level instead of crashing', () => {
+    const place = { ...PLACE, price_level: 99 }
+    render(<PlaceDetail place={place} onClose={vi.fn()} />, { wrapper })
+    expect(screen.getByText('$$$$')).toBeInTheDocument()
+  })
+
+  it('does not render a clickable link for javascript: URL scheme', () => {
+    const place = { ...PLACE, website: 'javascript:alert(1)' }
+    render(<PlaceDetail place={place} onClose={vi.fn()} />, { wrapper })
+    expect(screen.queryByText('🔗 Website')).not.toBeInTheDocument()
+    expect(screen.queryByRole('link')).not.toBeInTheDocument()
+  })
+
   it('renders Grátis when price_level is 0', () => {
     const place = { ...PLACE, price_level: 0 }
     render(<PlaceDetail place={place} onClose={vi.fn()} />, { wrapper })
