@@ -27,6 +27,48 @@ def fetch_place_details(place_id: str, api_key: str) -> dict:
     return body["result"]
 
 
+def backfill(conn, api_key: str) -> dict:
+    rows = conn.execute(
+        """SELECT id, google_place_id FROM places
+           WHERE deleted_at IS NULL
+             AND google_place_id IS NOT NULL
+             AND website IS NULL
+             AND opening_hours IS NULL
+             AND price_level IS NULL"""
+    ).fetchall()
+
+    updated = 0
+    errors = 0
+    for row in rows:
+        try:
+            result = fetch_place_details(row["google_place_id"], api_key)
+        except Exception as exc:
+            print(f"place {row['id']}: error fetching from Google: {exc}", file=sys.stderr)
+            errors += 1
+            continue
+
+        opening_hours = result.get("opening_hours", {}).get("weekday_text")
+        conn.execute(
+            "UPDATE places SET website = ?, opening_hours = ?, price_level = ? WHERE id = ?",
+            (
+                result.get("website"),
+                json.dumps(opening_hours) if opening_hours else None,
+                result.get("price_level"),
+                row["id"],
+            ),
+        )
+        updated += 1
+
+    conn.commit()
+
+    no_place_id = conn.execute(
+        """SELECT COUNT(*) AS n FROM places
+           WHERE deleted_at IS NULL AND google_place_id IS NULL"""
+    ).fetchone()["n"]
+
+    return {"updated": updated, "errors": errors, "skipped_no_google_place_id": no_place_id}
+
+
 def run() -> None:
     api_key = os.environ.get("GOOGLE_PLACES_API_KEY")
     if not api_key:
@@ -35,47 +77,10 @@ def run() -> None:
 
     conn = get_db()
     try:
-        rows = conn.execute(
-            """SELECT id, google_place_id FROM places
-               WHERE deleted_at IS NULL
-                 AND google_place_id IS NOT NULL
-                 AND website IS NULL
-                 AND opening_hours IS NULL
-                 AND price_level IS NULL"""
-        ).fetchall()
-
-        updated = 0
-        errors = 0
-        for row in rows:
-            try:
-                result = fetch_place_details(row["google_place_id"], api_key)
-            except Exception as exc:
-                print(f"place {row['id']}: error fetching from Google: {exc}", file=sys.stderr)
-                errors += 1
-                continue
-
-            opening_hours = result.get("opening_hours", {}).get("weekday_text")
-            conn.execute(
-                "UPDATE places SET website = ?, opening_hours = ?, price_level = ? WHERE id = ?",
-                (
-                    result.get("website"),
-                    json.dumps(opening_hours) if opening_hours else None,
-                    result.get("price_level"),
-                    row["id"],
-                ),
-            )
-            updated += 1
-
-        conn.commit()
-
-        no_place_id = conn.execute(
-            """SELECT COUNT(*) AS n FROM places
-               WHERE deleted_at IS NULL AND google_place_id IS NULL"""
-        ).fetchone()["n"]
-
-        print(f"Updated: {updated}")
-        print(f"Errors: {errors}")
-        print(f"Skipped (no google_place_id): {no_place_id}")
+        result = backfill(conn, api_key)
+        print(f"Updated: {result['updated']}")
+        print(f"Errors: {result['errors']}")
+        print(f"Skipped (no google_place_id): {result['skipped_no_google_place_id']}")
     finally:
         conn.close()
 
