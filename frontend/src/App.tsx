@@ -63,7 +63,7 @@ export default function App() {
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string
 
   return (
-    <APIProvider apiKey={apiKey}>
+    <APIProvider apiKey={apiKey} language="pt-BR">
       <div className={styles.app}>
         {/* Desktop layout */}
         <div className={styles.desktop}>

@@ -17,6 +17,9 @@ export interface Place {
   description: string | null
   categories: Category[]
   created_at: string
+  website?: string | null
+  opening_hours?: string[] | null
+  price_level?: number | null
 }
 
 export interface PlaceCreate {
@@ -25,6 +28,9 @@ export interface PlaceCreate {
   lat: number
   lng: number
   category_ids: number[]
+  website?: string | null
+  opening_hours?: string[] | null
+  price_level?: number | null
 }
 
 export interface PlaceUpdate {

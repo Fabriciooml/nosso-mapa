@@ -1,12 +1,54 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import React from 'react'
 import { AddPlaceModal } from './AddPlaceModal'
 
+const { MockAutocomplete, getLastInstance, getConstructionCount, resetConstructionCount } = vi.hoisted(() => {
+  let lastInstance: MockAutocompleteType | undefined
+  let constructionCount = 0
+
+  class MockAutocompleteType {
+    fields: string[]
+    place: Record<string, unknown> = {}
+    private listeners: Record<string, () => void> = {}
+
+    constructor(_el: HTMLInputElement, opts: { fields: string[] }) {
+      this.fields = opts.fields
+      lastInstance = this
+      constructionCount += 1
+    }
+
+    addListener(event: string, cb: () => void) {
+      this.listeners[event] = cb
+    }
+
+    getPlace() {
+      return this.place
+    }
+
+    trigger(event: string) {
+      this.listeners[event]?.()
+    }
+  }
+
+  return {
+    MockAutocomplete: MockAutocompleteType,
+    getLastInstance: () => lastInstance,
+    getConstructionCount: () => constructionCount,
+    resetConstructionCount: () => {
+      constructionCount = 0
+    },
+  }
+})
+
+const { placesLibMock } = vi.hoisted(() => ({
+  placesLibMock: { Autocomplete: MockAutocomplete },
+}))
+
 vi.mock('@vis.gl/react-google-maps', () => ({
-  useMapsLibrary: () => null,
+  useMapsLibrary: () => placesLibMock,
 }))
 
 const createPlaceMock = {
@@ -20,8 +62,14 @@ vi.mock('../hooks/usePlaces', () => ({
   useCreatePlace: () => createPlaceMock,
 }))
 
+const { useCategoriesMock } = vi.hoisted(() => ({
+  useCategoriesMock: vi.fn(() => ({
+    data: [{ id: 1, name: 'Café' }, { id: 2, name: 'Museu' }],
+  })),
+}))
+
 vi.mock('../hooks/useCategories', () => ({
-  useCategories: () => ({ data: [{ id: 1, name: 'Café' }, { id: 2, name: 'Museu' }] }),
+  useCategories: useCategoriesMock,
   useCreateCategory: () => ({ mutate: vi.fn() }),
 }))
 
@@ -32,8 +80,12 @@ function wrapper({ children }: { children: React.ReactNode }) {
 
 beforeEach(() => {
   vi.clearAllMocks()
+  resetConstructionCount()
   createPlaceMock.isError = false
   createPlaceMock.error = null
+  useCategoriesMock.mockReturnValue({
+    data: [{ id: 1, name: 'Café' }, { id: 2, name: 'Museu' }],
+  })
 })
 
 describe('AddPlaceModal', () => {
@@ -90,5 +142,71 @@ describe('AddPlaceModal', () => {
   it('does not show error when no error', () => {
     render(<AddPlaceModal onClose={vi.fn()} />, { wrapper })
     expect(screen.queryByText('Lugar já está na lista')).not.toBeInTheDocument()
+  })
+
+  it('requests extended place fields from Autocomplete', () => {
+    render(<AddPlaceModal onClose={vi.fn()} />, { wrapper })
+    expect(getLastInstance()?.fields).toEqual([
+      'place_id', 'name', 'geometry', 'website', 'opening_hours', 'price_level', 'types',
+    ])
+  })
+
+  it('auto-checks matching category chip when a place is selected', () => {
+    render(<AddPlaceModal onClose={vi.fn()} />, { wrapper })
+    const instance = getLastInstance()!
+    instance.place = {
+      place_id: 'abc',
+      name: 'Café Central',
+      geometry: { location: { lat: () => 1, lng: () => 2 } },
+      website: 'https://cafecentral.pt',
+      opening_hours: { weekday_text: ['segunda: 09:00–18:00'] },
+      price_level: 1,
+      types: ['cafe'],
+    }
+    act(() => {
+      instance.trigger('place_changed')
+    })
+    const chip = screen.getByText('Café').closest('button')!
+    expect(chip).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  it('includes website, opening_hours, price_level in the save payload', async () => {
+    render(<AddPlaceModal onClose={vi.fn()} />, { wrapper })
+    const instance = getLastInstance()!
+    instance.place = {
+      place_id: 'abc',
+      name: 'Café Central',
+      geometry: { location: { lat: () => 1, lng: () => 2 } },
+      website: 'https://cafecentral.pt',
+      opening_hours: { weekday_text: ['segunda: 09:00–18:00'] },
+      price_level: 1,
+      types: ['cafe'],
+    }
+    act(() => {
+      instance.trigger('place_changed')
+    })
+    await userEvent.click(screen.getByText('Salvar'))
+    expect(createPlaceMock.mutate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        website: 'https://cafecentral.pt',
+        opening_hours: ['segunda: 09:00–18:00'],
+        price_level: 1,
+      }),
+      expect.any(Object),
+    )
+  })
+
+  it('does not recreate the Autocomplete instance when categories reference changes', () => {
+    const { rerender } = render(<AddPlaceModal onClose={vi.fn()} />, { wrapper })
+    expect(getConstructionCount()).toBe(1)
+
+    // Simulate a categories refetch/invalidation returning a new array reference
+    // (e.g. after adding a category inline via handleAddCategory).
+    useCategoriesMock.mockReturnValue({
+      data: [{ id: 1, name: 'Café' }, { id: 2, name: 'Museu' }, { id: 3, name: 'Nova' }],
+    })
+    rerender(<AddPlaceModal onClose={vi.fn()} />)
+
+    expect(getConstructionCount()).toBe(1)
   })
 })

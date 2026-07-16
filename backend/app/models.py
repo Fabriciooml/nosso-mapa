@@ -17,6 +17,18 @@ class PlaceCreate(BaseModel):
     lat: float
     lng: float
     category_ids: list[int]
+    website: Optional[str] = None
+    opening_hours: Optional[list[str]] = None
+    price_level: Optional[int] = None
+
+    @field_validator("price_level")
+    @classmethod
+    def validate_price_level(cls, v: Optional[int]) -> Optional[int]:
+        if v is None:
+            return v
+        if not (0 <= v <= 4):
+            raise ValueError("price_level must be an integer between 0 and 4")
+        return v
 
 
 class PlaceStatusUpdate(BaseModel):
@@ -60,3 +72,6 @@ class PlaceOut(BaseModel):
     description: Optional[str]
     categories: list[CategoryOut]
     created_at: str
+    website: Optional[str]
+    opening_hours: Optional[list[str]]
+    price_level: Optional[int]

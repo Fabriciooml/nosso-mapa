@@ -1,3 +1,5 @@
+import json
+
 from fastapi import APIRouter, HTTPException, Response
 from ..database import get_db
 from ..models import PlaceCreate, PlaceOut, PlaceStatusUpdate, PlaceUpdate, ReviewCreate
@@ -9,6 +11,7 @@ def _fetch_place(conn, place_id: int) -> dict:
     row = conn.execute(
         """SELECT p.id, p.name, p.google_place_id, p.lat, p.lng,
                   p.status, p.created_at, p.alias, p.description,
+                  p.website, p.opening_hours, p.price_level,
                   AVG(r.rating) AS avg_rating
            FROM places p
            LEFT JOIN reviews r ON r.place_id = p.id
@@ -24,7 +27,9 @@ def _fetch_place(conn, place_id: int) -> dict:
            WHERE pc.place_id = ?""",
         (place_id,),
     ).fetchall()
-    return {**dict(row), "categories": [dict(c) for c in cats]}
+    data = {**dict(row), "categories": [dict(c) for c in cats]}
+    data["opening_hours"] = json.loads(data["opening_hours"]) if data["opening_hours"] else None
+    return data
 
 
 @router.get("", response_model=list[PlaceOut])
@@ -65,9 +70,13 @@ def create_place(body: PlaceCreate, response: Response):
             ).fetchone()
             if deleted:
                 place_id = deleted["id"]
+                opening_hours = json.dumps(body.opening_hours) if body.opening_hours is not None else None
                 conn.execute(
-                    "UPDATE places SET deleted_at = NULL, name = ?, lat = ?, lng = ? WHERE id = ?",
-                    (body.name, body.lat, body.lng, place_id),
+                    """UPDATE places
+                       SET deleted_at = NULL, name = ?, lat = ?, lng = ?,
+                           website = ?, opening_hours = ?, price_level = ?
+                       WHERE id = ?""",
+                    (body.name, body.lat, body.lng, body.website, opening_hours, body.price_level, place_id),
                 )
                 conn.execute("DELETE FROM place_categories WHERE place_id = ?", (place_id,))
                 for cat_id in body.category_ids:
@@ -79,9 +88,11 @@ def create_place(body: PlaceCreate, response: Response):
                 response.status_code = 200
                 return _fetch_place(conn, place_id)
 
+        opening_hours = json.dumps(body.opening_hours) if body.opening_hours is not None else None
         cur = conn.execute(
-            "INSERT INTO places (name, google_place_id, lat, lng) VALUES (?, ?, ?, ?)",
-            (body.name, body.google_place_id, body.lat, body.lng),
+            """INSERT INTO places (name, google_place_id, lat, lng, website, opening_hours, price_level)
+               VALUES (?, ?, ?, ?, ?, ?, ?)""",
+            (body.name, body.google_place_id, body.lat, body.lng, body.website, opening_hours, body.price_level),
         )
         place_id = cur.lastrowid
         for cat_id in body.category_ids:

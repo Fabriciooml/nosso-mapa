@@ -54,6 +54,9 @@ def init_db() -> None:
         "ALTER TABLE places ADD COLUMN alias TEXT",
         "ALTER TABLE places ADD COLUMN description TEXT",
         "ALTER TABLE places ADD COLUMN deleted_at DATETIME",
+        "ALTER TABLE places ADD COLUMN website TEXT",
+        "ALTER TABLE places ADD COLUMN opening_hours TEXT",
+        "ALTER TABLE places ADD COLUMN price_level INTEGER",
     ]:
         try:
             conn.execute(ddl)
