@@ -144,6 +144,18 @@ describe('PlaceDetail', () => {
     expect(screen.queryByRole('link')).not.toBeInTheDocument()
   })
 
+  it('does not render google info wrapper for unsafe website with no other fields', () => {
+    const place = { ...PLACE, website: 'javascript:alert(1)' }
+    render(<PlaceDetail place={place} onClose={vi.fn()} />, { wrapper })
+    expect(screen.queryByTestId('google-info')).not.toBeInTheDocument()
+  })
+
+  it('clamps negative price_level instead of crashing', () => {
+    const place = { ...PLACE, price_level: -3 }
+    render(<PlaceDetail place={place} onClose={vi.fn()} />, { wrapper })
+    expect(screen.getByText('$')).toBeInTheDocument()
+  })
+
   it('renders Grátis when price_level is 0', () => {
     const place = { ...PLACE, price_level: 0 }
     render(<PlaceDetail place={place} onClose={vi.fn()} />, { wrapper })
