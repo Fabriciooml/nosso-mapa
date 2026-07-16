@@ -18,7 +18,7 @@ services:
       - db-data:/app/data
     environment:
       - DB_PATH=/app/data/nosso_mapa.db
-      - GOOGLE_PLACES_API_KEY=${GOOGLE_PLACES_API_KEY:-}
+      - GOOGLE_PLACES_API_KEY=${VITE_GOOGLE_MAPS_API_KEY:-}
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/categories')"]
       interval: 10s
