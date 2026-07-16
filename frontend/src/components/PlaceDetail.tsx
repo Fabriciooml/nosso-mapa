@@ -67,7 +67,7 @@ export function PlaceDetail({ place, onClose }: Props) {
         </div>
       )}
 
-      {(place.website || (place.opening_hours && place.opening_hours.length > 0) || place.price_level != null) && (
+      {(isSafeWebsite || (place.opening_hours && place.opening_hours.length > 0) || place.price_level != null) && (
         <div className={styles.googleInfo} data-testid="google-info">
           {isSafeWebsite && (
             <a
