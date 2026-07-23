@@ -12,10 +12,9 @@ import { PlaceDetail } from './components/PlaceDetail'
 import { AddPlaceModal } from './components/AddPlaceModal'
 import { filterPlaces } from './utils/filterPlaces'
 import { visiblePlaces } from './utils/visiblePlaces'
+import { DEFAULT_CENTER } from './config'
 import type { PlaceStatus, MapBounds } from './types'
 import styles from './App.module.css'
-
-const DEFAULT_CENTER = { lat: -19.9186, lng: -43.9388 } // Praça Sete de Setembro, BH
 
 export default function App() {
   const { name, setName, clearName } = useIdentity()

@@ -5,6 +5,7 @@ import { SearchBar } from './SearchBar'
 import { filterPlaces } from '../utils/filterPlaces'
 import { sortPlacesByDistance, distanceDeg, formatDistance } from '../utils/distance'
 import styles from './ListPanel.module.css'
+import { APP_NAME } from '../config'
 
 interface Props {
   places: Place[]
@@ -65,7 +66,7 @@ export function ListPanel({
   return (
     <aside className={styles.panel}>
       <div className={styles.header}>
-        <span className={styles.wordmark}>Nosso Mapa</span>
+        <span className={styles.wordmark}>{APP_NAME}</span>
       </div>
       <div className={styles.search}>
         <SearchBar value={searchQuery} onChange={onSearchChange} />
