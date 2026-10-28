@@ -2,11 +2,11 @@ services:
   frontend:
     build:
       context: ./frontend
-      args:
-        VITE_GOOGLE_MAPS_API_KEY: ${VITE_GOOGLE_MAPS_API_KEY:-}
-        VITE_APP_NAME: ${VITE_APP_NAME:-}
-        VITE_DEFAULT_CENTER_LAT: ${VITE_DEFAULT_CENTER_LAT:-}
-        VITE_DEFAULT_CENTER_LNG: ${VITE_DEFAULT_CENTER_LNG:-}
+    environment:
+      - VITE_GOOGLE_MAPS_API_KEY=${VITE_GOOGLE_MAPS_API_KEY:-}
+      - VITE_APP_NAME=${VITE_APP_NAME:-}
+      - VITE_DEFAULT_CENTER_LAT=${VITE_DEFAULT_CENTER_LAT:-}
+      - VITE_DEFAULT_CENTER_LNG=${VITE_DEFAULT_CENTER_LNG:-}
     ports:
       - "1996:80"
     depends_on:

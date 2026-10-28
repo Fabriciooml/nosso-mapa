@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 
 describe('config', () => {
   beforeEach(() => {
+    delete window.__APP_CONFIG__
     vi.unstubAllEnvs()
     vi.resetModules()
   })
@@ -32,5 +33,13 @@ describe('config', () => {
     const { APP_NAME, DEFAULT_CENTER } = await import('./config')
     expect(APP_NAME).toBe('Nosso Mapa')
     expect(DEFAULT_CENTER).toEqual({ lat: -19.9186, lng: -43.9388 })
+  })
+
+  it('prefers runtime config over build-time env', async () => {
+    vi.stubEnv('VITE_APP_NAME', 'Build Time')
+    window.__APP_CONFIG__ = { VITE_APP_NAME: 'Runtime', VITE_DEFAULT_CENTER_LAT: '1.5', VITE_DEFAULT_CENTER_LNG: '2.5' }
+    const { APP_NAME, DEFAULT_CENTER } = await import('./config')
+    expect(APP_NAME).toBe('Runtime')
+    expect(DEFAULT_CENTER).toEqual({ lat: 1.5, lng: 2.5 })
   })
 })

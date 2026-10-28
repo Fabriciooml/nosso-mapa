@@ -43,11 +43,6 @@ jobs:
         with:
           context: ./frontend
           push: true
-          build-args: |
-            VITE_GOOGLE_MAPS_API_KEY=${{ vars.VITE_GOOGLE_MAPS_API_KEY }}
-            VITE_APP_NAME=${{ vars.VITE_APP_NAME }}
-            VITE_DEFAULT_CENTER_LAT=${{ vars.VITE_DEFAULT_CENTER_LAT }}
-            VITE_DEFAULT_CENTER_LNG=${{ vars.VITE_DEFAULT_CENTER_LNG }}
           tags: |
             ghcr.io/fabriciooml/nosso-mapa-frontend:main
             ghcr.io/fabriciooml/nosso-mapa-frontend:sha-${{ github.sha }}

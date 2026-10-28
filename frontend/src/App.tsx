@@ -12,7 +12,7 @@ import { PlaceDetail } from './components/PlaceDetail'
 import { AddPlaceModal } from './components/AddPlaceModal'
 import { filterPlaces } from './utils/filterPlaces'
 import { visiblePlaces } from './utils/visiblePlaces'
-import { DEFAULT_CENTER } from './config'
+import { DEFAULT_CENTER, env } from './config'
 import type { PlaceStatus, MapBounds } from './types'
 import styles from './App.module.css'
 
@@ -59,7 +59,7 @@ export default function App() {
     mapBounds: null,
   })
   const markerPlaces = visiblePlaces(filteredForMap, selectedPlace)
-  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string
+  const apiKey = env('VITE_GOOGLE_MAPS_API_KEY')
 
   return (
     <APIProvider apiKey={apiKey} language="pt-BR">
